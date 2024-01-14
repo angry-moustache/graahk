@@ -9,7 +9,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        app()->singleton('site', fn () => new \App\Site);
     }
 
     public function boot(): void

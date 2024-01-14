@@ -10,6 +10,11 @@ class Login extends Component
     public array $loginFields = [];
     public array $registerFields = [];
 
+    public function mount()
+    {
+        app('site')->title('Login');
+    }
+
     public function login()
     {
         $this->validate([

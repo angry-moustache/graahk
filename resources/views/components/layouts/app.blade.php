@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        {{-- <title>{{ app('site')->getTitle() }}</title> --}}
+        <title>{{ app('site')->getTitle() }}</title>
         <link rel="icon" href="{{ asset('icon.png') }}" type="image/x-icon" />
         @vite(['resources/css/app.scss'])
     </head>
