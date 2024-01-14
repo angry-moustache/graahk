@@ -12,6 +12,6 @@ class Dashboard extends Component
 
     public function mount()
     {
-        $this->cards = Card::latest()->get();
+        $this->cards = Card::dudes()->get();
     }
 }

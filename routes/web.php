@@ -22,4 +22,7 @@ Route::middleware([Authenticate::class])->group(function () {
 
     Route::get('decks/edit/{deck:id}', Livewire\Decks\Edit::class)
         ->name('deck.edit');
+
+    Route::get('server', Livewire\Servers\Index::class)
+        ->name('server.index');
 });

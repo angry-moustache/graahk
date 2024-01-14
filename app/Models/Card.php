@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use AngryMoustache\Media\Models\Attachment;
+use App\Enums\CardType;
 use App\Enums\Effect;
+use App\Enums\Keyword;
 use App\Enums\Tribe;
 use App\Enums\Trigger;
 use Illuminate\Database\Eloquent\Model;
@@ -19,12 +21,15 @@ class Card extends Model
         'power',
         'tribes',
         'effects',
+        'keywords',
         'masked_text',
     ];
 
     protected $casts = [
+        'type' => CardType::class,
         'tribes' => 'array',
         'effects' => 'array',
+        'keywords' => 'array',
     ];
 
     public function attachment()
@@ -32,17 +37,27 @@ class Card extends Model
         return $this->belongsTo(Attachment::class);
     }
 
+    public function scopeDudes($query)
+    {
+        return $query->where('type', CardType::DUDE);
+    }
+
     public function getTribes(): Collection
     {
         return Collection::wrap($this->tribes)->map(function (string $tribe) {
-            return Tribe::from($tribe)->getText();
+            return Tribe::from($tribe)->toText();
         });
     }
 
-    public function getText(): string
+    public function toText(): string
     {
+        $keywords = Collection::wrap($this->keywords)->map(function (string $keyword) {
+            return '<strong>' . Keyword::from($keyword)->toText() . '</strong>';
+        });
+
         if ($this->masked_text) {
-            return $this->masked_text;
+            return ($keywords->count() ? $keywords->join(' ') . ' ' : '')
+                . $this->masked_text;
         }
 
         return Collection::wrap($this->effects)->map(function (array $effect) {
@@ -50,7 +65,10 @@ class Card extends Model
                 Trigger::from($effect['trigger'])->toText(),
                 Effect::from($effect['effect'])->toText($effect),
             ]) . '. ';
-        })->join(' ');
+        })
+            ->prepend($keywords)
+            ->flatten()
+            ->join(' ');
     }
 
     public function toJavascript(): array
@@ -62,5 +80,16 @@ class Card extends Model
             'name' => $this->name,
             'image' => $this->attachment->path(),
         ];
+    }
+
+    public static function booted()
+    {
+        static::addGlobalScope('sorted', function ($query) {
+            $query->orderBy('cost')->orderBy('name');
+        });
+
+        // static::addGlobalScope('hasAttachment', function ($query) {
+        //     $query->has('attachment');
+        // });
     }
 }

@@ -15,6 +15,8 @@ class Edit extends Component
 
     public string $name;
 
+    public null | int $mainCardId = null;
+
     public function mount()
     {
         app('site')->title($this->deck->name);
@@ -26,13 +28,15 @@ class Edit extends Component
         }
 
         $this->name = $this->deck->name;
+        $this->mainCardId = $this->deck->main_card_id;
     }
 
     public function render()
     {
         return view('livewire.decks.edit', [
-            'cards' => Card::latest()->get(),
-            'cardList' => Card::latest()->get()
+            'cards' => Card::dudes()->get(),
+            'cardList' => Card::dudes()
+                ->get()
                 ->mapWithKeys(fn (Card $card) => [$card->id => $card->toJavascript()]),
         ]);
     }
@@ -45,6 +49,7 @@ class Edit extends Component
 
         $this->deck->update([
             'name' => $this->name,
+            'main_card_id' => $this->mainCardId,
             'cards' => $this->deckList->pluck('amount', 'card.id'),
         ]);
     }

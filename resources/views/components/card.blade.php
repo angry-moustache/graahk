@@ -20,7 +20,7 @@
     </span>
 
     <p class="absolute top-[65%] bottom-[14%] left-[9%] w-[82%] overflow-y-auto">
-        {{ $card->getText() }}
+        {!! $card->toText() !!}
     </p>
 
     <h4 class="absolute bottom-[2.6%] left-[4%] w-[29%] text-center font-bold">{{ $card->power }}</h4>

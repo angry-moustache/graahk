@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Enums\CardType;
 use App\Enums\Effect;
+use App\Enums\Keyword;
 use App\Enums\Tribe;
 use App\Enums\Trigger;
 use App\Filament\Components\Columns\AttachmentColumn;
@@ -22,6 +23,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 
 class CardResource extends Resource
 {
@@ -66,7 +69,15 @@ class CardResource extends Resource
             Section::make('Effects')->schema([
                 Textarea::make('masked_text')
                     ->label('Masked text')
-                    ->helperText('This text will be displayed on the card instead of the auto-generated text.'),
+                    ->helperText(fn (Card $record) => new HtmlString(collect([
+                            'This text will be displayed on the card instead of the auto-generated text.',
+                            $record->toText(),
+                        ])->filter()->join('<br><br>')
+                    )),
+
+                Select::make('keywords')
+                    ->options(Keyword::class)
+                    ->multiple(),
 
                 Repeater::make('effects')->schema([
                     Grid::make()->schema([
@@ -113,6 +124,11 @@ class CardResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->withoutGlobalScopes();
     }
 
     public static function getPages(): array

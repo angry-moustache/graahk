@@ -17,6 +17,13 @@
         />
 
         <x-navigation.item
+            route="{{ route('server.index') }}"
+            :active="request()->routeIs('server.index')"
+            icon="heroicon-o-globe-alt"
+            label="Server browser"
+        />
+
+        <x-navigation.item
             route="{{ route('logout.index') }}"
             :active="request()->routeIs('logout.index')"
             icon="heroicon-o-arrow-right-start-on-rectangle"

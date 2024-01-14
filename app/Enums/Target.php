@@ -9,11 +9,16 @@ enum Target: string implements HasLabel
     case PLAYER = 'player';
     case OPPONENT = 'opponent';
     case DUDE = 'dude';
+    case DUDE_PLAYER = 'dude_player';
+    case DUDE_OPPONENT = 'dude_opponent';
     case ALL_PLAYERS = 'all_players';
     case ALL_PLAYER_DUDES = 'all_player_dudes';
+    case ALL_PLAYER_DUDES_NOT_SELF = 'all_player_dudes_not_self';
     case ALL_OPPONENT_DUDES = 'all_opponent_dudes';
     case ALL_DUDES = 'all_dudes';
     case ALL_OTHER_DUDES = 'all_other_dudes';
+    case EVERYTHING = 'everything';
+    case ITSELF = 'itself';
 
     public function getLabel(): ?string
     {
@@ -21,11 +26,16 @@ enum Target: string implements HasLabel
             self::PLAYER => 'Player',
             self::OPPONENT => 'Opponent',
             self::DUDE => 'Dude',
+            self::DUDE_PLAYER => 'Dude (player)',
+            self::DUDE_OPPONENT => 'Dude (opponent)',
             self::ALL_PLAYERS => 'All players',
             self::ALL_PLAYER_DUDES => 'All player dudes',
+            self::ALL_PLAYER_DUDES_NOT_SELF => 'All player dudes except itself',
             self::ALL_OPPONENT_DUDES => 'All opponent dudes',
             self::ALL_DUDES => 'All dudes',
             self::ALL_OTHER_DUDES => 'All other dudes',
+            self::EVERYTHING => 'Everything',
+            self::ITSELF => 'Itself',
         };
     }
 
@@ -34,12 +44,17 @@ enum Target: string implements HasLabel
         return match ($this) {
             self::PLAYER => 'you',
             self::OPPONENT => 'your opponent',
-            self::DUDE => 'dude',
+            self::DUDE => 'target dude',
+            self::DUDE_PLAYER => 'a dude you control',
+            self::DUDE_OPPONENT => 'a dude your opponent controls',
             self::ALL_PLAYERS => 'all players',
             self::ALL_PLAYER_DUDES => 'all dudes you control',
+            self::ALL_PLAYER_DUDES_NOT_SELF => 'all other dudes you control',
             self::ALL_OPPONENT_DUDES => 'all dudes your opponent controls',
             self::ALL_DUDES => 'all dudes',
             self::ALL_OTHER_DUDES => 'all other dudes',
+            self::EVERYTHING => 'everything',
+            self::ITSELF => 'this',
         };
     }
 }
