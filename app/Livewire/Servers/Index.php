@@ -48,4 +48,24 @@ class Index extends Component
             ],
         ]);
     }
+
+    public function joinGame(Game $game)
+    {
+        if ($game->player_id_2) {
+            return;
+        }
+
+        $player1 = $game->user_id_1;
+        $player2 = auth()->id();
+
+        $gameData = $game->data;
+        $gameData['decks'][$player2] = $this->fields['deck_id'];
+        $gameData['current_player'] = rand(0, 1) ? $player2 : $player1;
+
+        $game->update([
+            'data' => $gameData,
+            'user_id_1' => $player1,
+            'user_id_2' => $player2,
+        ]);
+    }
 }

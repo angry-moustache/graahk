@@ -55,4 +55,12 @@ class Deck extends Model
             ])
             ->values();
     }
+
+    public function idList(): Collection
+    {
+        return Collection::wrap($this->cards)
+            ->map(fn (int $amount, int $cardId) => collect()->pad($amount, $cardId))
+            ->flatten()
+            ->values();
+    }
 }

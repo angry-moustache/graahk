@@ -69,9 +69,9 @@ class CardResource extends Resource
             Section::make('Effects')->schema([
                 Textarea::make('masked_text')
                     ->label('Masked text')
-                    ->helperText(fn (Card $record) => new HtmlString(collect([
+                    ->helperText(fn (null | Card $record) => new HtmlString(collect([
                             'This text will be displayed on the card instead of the auto-generated text.',
-                            $record->toText(),
+                            $record?->toText(),
                         ])->filter()->join('<br><br>')
                     )),
 

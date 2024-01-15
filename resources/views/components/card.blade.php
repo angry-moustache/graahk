@@ -4,11 +4,11 @@
 
 <div
     style="background-image: url({{ $card->attachment->path() }})"
-    class="
+    {{ $attributes->merge(['class' => '
         graahk-card w-full rounded-xl overflow-hidden
         bg-cover bg-center relative
         text-black select-none aspect-[2.5/3.5]
-    "
+    ']) }}
 >
     <img src="{{ asset('images/cards/dude-1.svg')}}" />
 

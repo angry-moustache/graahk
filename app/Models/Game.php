@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class Game extends Model
 {
+    use HasUuids;
+
     protected $fillable = [
+        'uuid',
         'name',
         'user_id_1',
         'user_id_2',
@@ -32,5 +36,12 @@ class Game extends Model
     public function scopeOngoing($query)
     {
         return $query->whereNull('finished_at');
+    }
+
+    public function opponentId(string $playerId): string
+    {
+        return $this->user_id_1 == $playerId
+            ? $this->user_id_2
+            : $this->user_id_1;
     }
 }

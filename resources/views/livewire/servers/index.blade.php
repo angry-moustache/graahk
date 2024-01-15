@@ -34,6 +34,7 @@
             @foreach ($games as $game)
                 <li>
                     {{ $game->name }}
+                    <a wire:click="joinGame('{{ $game->id }}')">Join</a>
                 </li>
             @endforeach
         </ul>

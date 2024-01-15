@@ -62,8 +62,8 @@ class Card extends Model
 
         return Collection::wrap($this->effects)->map(function (array $effect) {
             return implode(' ', [
-                Trigger::from($effect['trigger'])->toText(),
-                Effect::from($effect['effect'])->toText($effect),
+                Trigger::tryFrom($effect['trigger'])?->toText(),
+                Effect::tryFrom($effect['effect'])?->toText($effect),
             ]) . '. ';
         })
             ->prepend($keywords)
@@ -88,8 +88,8 @@ class Card extends Model
             $query->orderBy('cost')->orderBy('name');
         });
 
-        // static::addGlobalScope('hasAttachment', function ($query) {
-        //     $query->has('attachment');
-        // });
+        static::addGlobalScope('hasAttachment', function ($query) {
+            $query->has('attachment');
+        });
     }
 }

@@ -17,6 +17,7 @@ enum Trigger: string implements HasLabel
     case AFTER_DAMAGE = 'after_damage';
     case ATTACK = 'attack';
     case PLAYER_DUDE_DIES = 'dude_dies ';
+    case DRAW_CARD = 'draw_card';
 
     public function getLabel(): ?string
     {
@@ -32,6 +33,7 @@ enum Trigger: string implements HasLabel
             self::AFTER_DAMAGE => 'After taking damage',
             self::ATTACK => 'Attacks',
             self::PLAYER_DUDE_DIES => 'Dude you control dies',
+            self::DRAW_CARD => 'After drawing a card',
         };
     }
 
@@ -49,6 +51,7 @@ enum Trigger: string implements HasLabel
             self::AFTER_DAMAGE => 'After this dude survives damage,',
             self::ATTACK => 'When this dude attacks,',
             self::PLAYER_DUDE_DIES => 'When a dude you control dies,',
+            self::DRAW_CARD => 'After you draw a card,',
         };
     }
 }

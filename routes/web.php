@@ -25,4 +25,7 @@ Route::middleware([Authenticate::class])->group(function () {
 
     Route::get('server', Livewire\Servers\Index::class)
         ->name('server.index');
+
+    Route::get('play/{game:id}', Livewire\Games\Play::class)
+        ->name('game.play');
 });

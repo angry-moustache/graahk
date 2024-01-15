@@ -9,13 +9,17 @@ enum Keyword: string implements HasLabel
     case PROTECT = 'protect';
     case RUSH = 'rush';
     case PHANTOM = 'phantom';
+    case SCENERY = 'scenery';
+    case DRAINED = 'drained';
 
     public function getLabel(): ?string
     {
         return match ($this) {
             self::PROTECT => 'Protect',
             self::RUSH => 'Rush',
-            self::PHANTOM => 'Phantom',
+            self::PHANTOM => 'Spectral',
+            self::SCENERY => 'Scenery',
+            self::DRAINED => 'Drained',
         };
     }
 
@@ -24,7 +28,9 @@ enum Keyword: string implements HasLabel
         return match ($this) {
             self::PROTECT => 'Protect.',
             self::RUSH => 'Rush.',
-            self::PHANTOM => 'Phantom.',
+            self::PHANTOM => 'Spectral.',
+            self::SCENERY => 'Scenery.',
+            self::DRAINED => 'Drained.',
         };
     }
 }

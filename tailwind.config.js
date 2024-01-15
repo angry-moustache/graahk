@@ -11,6 +11,7 @@ export default {
 
         background: 'var(--color-background)',
         surface: 'var(--color-surface)',
+        border: 'var(--color-border)',
 
         text: 'var(--color-text)',
         error: 'var(--color-error)',

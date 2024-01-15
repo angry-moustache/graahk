@@ -11,8 +11,10 @@
         {{ $deck->name }}
     </div>
 
-    <div class="absolute top-4 left-4 text-error flex items-center gap-4 bg-black py-2 px-4 rounded-lg bg-opacity-75">
-        <x-heroicon-o-exclamation-triangle class="w-6 h-6" />
-        Not a legal deck
-    </div>
+    @if (! $deck->isLegal())
+        <div class="absolute top-4 left-4 text-error flex items-center gap-4 bg-black py-2 px-4 rounded-lg bg-opacity-75">
+            <x-heroicon-o-exclamation-triangle class="w-6 h-6" />
+            Not a legal deck
+        </div>
+    @endif
 </a>
