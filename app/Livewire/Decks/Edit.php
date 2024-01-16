@@ -37,7 +37,7 @@ class Edit extends Component
             'cards' => Card::dudes()->get(),
             'cardList' => Card::dudes()
                 ->get()
-                ->mapWithKeys(fn (Card $card) => [$card->id => $card->toJavascript()]),
+                ->mapWithKeys(fn (Card $card) => [$card->id => $card->toJavaScript()]),
         ]);
     }
 

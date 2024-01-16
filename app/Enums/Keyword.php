@@ -8,7 +8,7 @@ enum Keyword: string implements HasLabel
 {
     case PROTECT = 'protect';
     case RUSH = 'rush';
-    case PHANTOM = 'phantom';
+    case GHOSTLY = 'ghostly';
     case SCENERY = 'scenery';
     case DRAINED = 'drained';
 
@@ -17,7 +17,7 @@ enum Keyword: string implements HasLabel
         return match ($this) {
             self::PROTECT => 'Protect',
             self::RUSH => 'Rush',
-            self::PHANTOM => 'Spectral',
+            self::GHOSTLY => 'Ghostly',
             self::SCENERY => 'Scenery',
             self::DRAINED => 'Drained',
         };
@@ -28,7 +28,7 @@ enum Keyword: string implements HasLabel
         return match ($this) {
             self::PROTECT => 'Protect.',
             self::RUSH => 'Rush.',
-            self::PHANTOM => 'Spectral.',
+            self::GHOSTLY => 'Ghostly.',
             self::SCENERY => 'Scenery.',
             self::DRAINED => 'Drained.',
         };

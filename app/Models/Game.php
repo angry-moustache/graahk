@@ -44,4 +44,9 @@ class Game extends Model
             ? $this->user_id_2
             : $this->user_id_1;
     }
+
+    public function route(): string
+    {
+        return route('game.play', $this);
+    }
 }

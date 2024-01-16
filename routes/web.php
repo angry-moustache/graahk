@@ -29,3 +29,9 @@ Route::middleware([Authenticate::class])->group(function () {
     Route::get('play/{game:id}', Livewire\Games\Play::class)
         ->name('game.play');
 });
+
+// Route::get('test', function () {
+//     \App\Models\Card::whereDoesntHave('sets')->get()->each(function ($card) {
+//         $card->sets()->attach(1);
+//     });
+// });

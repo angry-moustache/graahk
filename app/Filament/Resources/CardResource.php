@@ -64,6 +64,10 @@ class CardResource extends Resource
                         ->default(100)
                         ->required(),
                 ]),
+
+                Select::make('sets')
+                    ->relationship('sets', 'name')
+                    ->multiple(),
             ]),
 
             Section::make('Effects')->schema([
@@ -115,6 +119,9 @@ class CardResource extends Resource
 
                 AttachmentColumn::make('attachment_id')
                     ->label('Image'),
+
+                TextColumn::make('sets')
+                    ->getStateUsing(fn (Card $record) => $record->sets->pluck('name')->join(', ')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

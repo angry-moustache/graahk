@@ -2,47 +2,37 @@
 
 namespace App\Livewire\Games\Traits;
 
+use App\Enums\Effect;
 use App\Enums\GameStatus;
 use App\Enums\Trigger;
 
 trait HandlesTriggers
 {
-    public function checkTrigger(Trigger $trigger)
+    public function trigger(Trigger $trigger, ...$args)
     {
-        // dd($trigger);
-        $this->updateGameData();
+        match ($trigger) {
+            Trigger::START_TURN => $this->triggerStartTurn(),
+            default => null,
+        };
     }
 
-    public function triggerTurnStart()
+    public function checkTriggers(Trigger $trigger)
     {
-        $turn = $this->gameData['turn'] ?? 0;
-        $this->gameData['turn'] = $turn + 1;
-
-        $this->effectGainEnergy($this->currentPlayerId, 3); // Gain energy
-
-        // Draw card (if not first turn)
-        if ($this->gameData['turn'] > 1) {
-            $this->effectDrawRandomCard($this->currentPlayerId, 1);
-        }
-
-        $this->status = GameStatus::PLAYING;
-
-        $this->checkTrigger(Trigger::START_TURN);
+        // Check triggers on the board
     }
 
-    public function triggerEndTurn()
+    private function triggerStartTurn()
     {
-        // Are you allowed?
-        if (
-            // $this->status !== GameStatus::PLAYING ||
-            $this->currentPlayerId !== $this->playerId
-        ) {
-            return;
-        }
+        // Gain energy
+        $this->player->energy += 3;
+        $this->queue(Effect::GAIN_ENERGY->animation());
+        $this->checkTriggers(Trigger::GAIN_ENERGY);
 
-        $this->gameData['current_player'] = $this->opponentId;
-        $this->status = GameStatus::TURN_START;
+        // Draw a card
+        $this->player->drawCard();
+        $this->queue(Effect::DRAW_CARDS->animation());
+        $this->checkTriggers(Trigger::DRAW_CARD);
 
-        $this->checkTrigger(Trigger::END_TURN);
+        $this->checkTriggers(Trigger::START_TURN);
     }
 }

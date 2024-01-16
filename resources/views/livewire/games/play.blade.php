@@ -1,30 +1,52 @@
 <div
     class="flex h-screen w-screen overflow-hidden"
     x-data="{
+        queue: @js($queue->jobs),
+        animations: [],
+        init () {
+            this.fireQueue(this.queue)
+            channel.bind('update-queue', (data) => {
+                this.fireQueue(data.queue)
+            })
+        },
+        fireQueue (queue) {
+            let carry = 0
+            queue.forEach((job) => {
+                window.setTimeout(() => {
+                    this.animations.push(job.job)
+                    $wire.dispatch('update-board', { board: job.board })
+                }, carry)
 
+                carry += job.job.duration
+            })
+        }
     }"
 >
-    <div wire:poll.keepalive></div>
+    <div class="absolute inset-0 pointer-events-none z-90">
+        {{-- <template x-for="animation in animations" :key="animation.name">
+            <img x-bind:src="'/images/animations/' + animation.name + '.png'" />
+        </template> --}}
+    </div>
 
     <div class="flex flex-col gap-4 h-screen w-[15rem] bg-surface border-r border-r-border">
-        <x-game.player-info :data="$opponentData" />
+        <x-game.player-info :player="$opponent" />
 
         <div class="grow">
             {{-- TODO --}}
         </div>
 
-        <x-game.player-info class="flex-col-reverse" :data="$playerData" />
+        <x-game.player-info class="flex-col-reverse" :player="$player" />
     </div>
 
     <div class="flex flex-col grow">
         <x-game.board
-            :data="$opponentData"
-            @class(['bg-surface' => $opponentId !== $currentPlayerId])
+            :player="$opponent"
+            @class(['bg-surface' => $yourTurn])
         />
 
         <x-game.board
-            :data="$playerData"
-            @class(['bg-surface' => $playerId !== $currentPlayerId])
+            :player="$player"
+            @class(['bg-surface' => ! $yourTurn])
         />
 
         <div class="relative flex justify-evenly h-[20vh] border-t border-t-border bg-surface">
@@ -32,9 +54,9 @@
                 absolute left-0 right-0 -bottom-[4rem]
                 flex justify-center items-center gap-2
             ">
-                @foreach ($playerData['hand'] as $key => $card)
+                @foreach ($player->hand as $key => $card)
                     @php
-                        $canPlay = ($card->cost <= $playerData['energy']);
+                        $canPlay = ($card['cost'] <= $player->energy);
                     @endphp
 
                     <x-card

@@ -77,3 +77,12 @@ window.resizeCards = function () {
     window.fitText(cardTribes[i], 2.2)
   }
 }
+
+window.resizeCards()
+window.onresize = (() => window.resizeCards())
+
+Livewire.hook('request', ({ succeed }) => {
+    succeed(({ snapshot, effect }) => {
+        window.resizeCards()
+    })
+})

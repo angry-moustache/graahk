@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+use App\Entities\Game\Animation;
 use App\Models\Card;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -26,6 +27,8 @@ enum Effect: string implements HasLabel
     case DRAW_SPECIFIC_DUDE = 'draw_specific_dude';
     case BOUNCE = 'bounce';
     case SILENCE = 'silence';
+    case SHUFFLE_DECK = 'shuffle_deck';
+    case READY_DUDE = 'ready_dude';
 
     // Dude specific effects
     case UNNAMED_ONE = 'unnamed_one';
@@ -49,6 +52,8 @@ enum Effect: string implements HasLabel
             self::DRAW_SPECIFIC_DUDE => 'Draw specific card (dude)',
             self::BOUNCE => 'Bounce',
             self::SILENCE => 'Silence',
+            self::SHUFFLE_DECK => 'Shuffle deck',
+            self::READY_DUDE => 'Ready dude',
 
             self::UNNAMED_ONE => 'Unnamed one effect',
         };
@@ -77,7 +82,8 @@ enum Effect: string implements HasLabel
             self::RESET_HEALTH,
             self::STUN,
             self::BOUNCE,
-            self::SILENCE => [
+            self::SILENCE,
+            self::READY_DUDE => [
                 Select::make('target')->options(Target::class)->required(),
             ],
             self::DRAW_SPECIFIC_COST => [
@@ -100,6 +106,9 @@ enum Effect: string implements HasLabel
                 Select::make('dude')
                     ->options(fn () => Card::where('type', CardType::DUDE)->orderBy('name')->pluck('name', 'id'))
                     ->required(),
+            ],
+            self::SHUFFLE_DECK => [
+                Select::make('target')->options(Target::class)->required(),
             ],
             default => [
                 TextInput::make('amount')->required(),
@@ -200,8 +209,25 @@ enum Effect: string implements HasLabel
                 Target::from($parameters['target'])->toText(),
                 'to its owner\'s hand',
             ],
+            self::SHUFFLE_DECK => [
+                Target::from($parameters['target'])->toText(),
+                'shuffle your deck',
+            ],
+            self::READY_DUDE => [
+                'ready',
+                Target::from($parameters['target'])->toText(),
+            ],
         })
             ->filter()
             ->join(' ');
+    }
+
+    public function animation(): null | Animation
+    {
+        return match ($this) {
+            self::GAIN_ENERGY => new Animation('gain-energy'),
+            self::DRAW_CARDS => new Animation('draw-card'),
+            default => null,
+        };
     }
 }

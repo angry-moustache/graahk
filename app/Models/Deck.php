@@ -51,7 +51,7 @@ class Deck extends Model
         return Collection::wrap($this->cards)
             ->map(fn (int $amount, int $cardId) => [
                 'amount' => $amount,
-                'card' => Card::find($cardId)->toJavascript(),
+                'card' => Card::find($cardId)->toJavaScript(),
             ])
             ->values();
     }

@@ -2,8 +2,14 @@
     'card',
 ])
 
+@php
+    if (is_array($card)) {
+        $card = (object) $card;
+    }
+@endphp
+
 <div
-    style="background-image: url({{ $card->attachment->path() }})"
+    style="background-image: url('{{ $card->image ?? $card->attachment->path() }}')"
     {{ $attributes->merge(['class' => '
         graahk-card w-full rounded-xl overflow-hidden
         bg-cover bg-center relative
@@ -16,11 +22,11 @@
     <h3 class="absolute top-[5%] left-[21%] w-full font-bold">{{ $card->name }}</h3>
 
     <span class="absolute bottom-[36.5%] left-[8%] w-[80%] text-lg">
-        {{ $card->getTribes()->join(', ') }}
+        {{ $card->tribes ?? $card->getTribes()->join(', ') }}
     </span>
 
     <p class="absolute top-[65%] bottom-[14%] left-[9%] w-[82%] overflow-y-auto">
-        {!! $card->toText() !!}
+        {!! $card->text ?? $card->toText() !!}
     </p>
 
     <h4 class="absolute bottom-[2.6%] left-[4%] w-[29%] text-center font-bold">{{ $card->power }}</h4>

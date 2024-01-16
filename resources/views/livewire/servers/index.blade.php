@@ -35,6 +35,7 @@
                 <li>
                     {{ $game->name }}
                     <a wire:click="joinGame('{{ $game->id }}')">Join</a>
+                    <a href="{{ $game->route() }}">Play</a>
                 </li>
             @endforeach
         </ul>

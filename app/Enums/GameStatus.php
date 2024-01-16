@@ -8,4 +8,5 @@ enum GameStatus: string
     case TURN_START = 'turn_started';
     case PLAYING = 'playing';
     case FINISHED = 'finished';
+    case ANIMATIONS = 'animations';
 }

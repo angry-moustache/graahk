@@ -10,6 +10,7 @@ use App\Enums\Tribe;
 use App\Enums\Trigger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use stdClass;
 
 class Card extends Model
 {
@@ -35,6 +36,11 @@ class Card extends Model
     public function attachment()
     {
         return $this->belongsTo(Attachment::class);
+    }
+
+    public function sets()
+    {
+        return $this->belongsToMany(Set::class);
     }
 
     public function scopeDudes($query)
@@ -71,14 +77,18 @@ class Card extends Model
             ->join(' ');
     }
 
-    public function toJavascript(): array
+    public function toJavaScript(): array
     {
         return [
             'id' => $this->id,
-            'cost' => $this->cost,
-            'power' => $this->power,
             'name' => $this->name,
             'image' => $this->attachment->path(),
+            'cost' => $this->cost,
+            'originalCost' => $this->cost,
+            'power' => $this->power,
+            'originalPower' => $this->power,
+            'tribes' => $this->getTribes()->join(', '),
+            'text' => $this->toText(),
         ];
     }
 

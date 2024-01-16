@@ -2,16 +2,22 @@
 
 namespace App\Livewire;
 
-use App\Models\Card;
-use Illuminate\Support\Collection;
+use App\Models\Set;
 use Livewire\Component;
 
 class Dashboard extends Component
 {
-    public Collection $cards;
+    public null | Set $currentSet = null;
 
-    public function mount()
+    public function setSet(Set $set)
     {
-        $this->cards = Card::dudes()->get();
+        $this->currentSet = $set;
+    }
+
+    public function render()
+    {
+        return view('livewire.dashboard', [
+            'sets' => Set::latest()->get(),
+        ]);
     }
 }
