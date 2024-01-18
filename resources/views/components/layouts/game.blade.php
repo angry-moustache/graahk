@@ -9,7 +9,9 @@
     </head>
 
     <body class="bg-background text-text">
-        {{ $slot }}
+        <div id="app">
+            {{ $slot }}
+        </div>
 
         @vite(['resources/js/app.js'])
     </body>

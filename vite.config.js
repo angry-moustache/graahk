@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import mkcert from 'vite-plugin-mkcert'
+import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
   server: {
@@ -12,6 +13,14 @@ export default defineConfig({
   },
   plugins: [
     mkcert(),
+    vue({
+      template: {
+        transformAssetUrls: {
+          base: null,
+          includeAbsolute: false,
+        },
+      },
+    }),
     laravel({
       input: [
         'resources/css/app.scss',
@@ -19,4 +28,9 @@ export default defineConfig({
       ],
     }),
   ],
+  resolve: {
+    alias: {
+      vue: 'vue/dist/vue.esm-bundler.js',
+    },
+  },
 });
