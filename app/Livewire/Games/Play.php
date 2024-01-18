@@ -4,6 +4,7 @@ namespace App\Livewire\Games;
 
 use App\Entities\Game\Player;
 use App\Entities\Game\Queue;
+use App\Enums\Effect;
 use App\Enums\GameStatus;
 use App\Enums\Trigger;
 use App\Livewire\Games\Traits;
@@ -54,6 +55,7 @@ class Play extends Component
         $this->setPlayerData();
         $this->handleGameStatus();
 
+        $this->queue(Effect::GAIN_ENERGY->animation());
         $this->queue->send();
 
         if ($this->status !== GameStatus::ANIMATIONS) {
@@ -67,31 +69,13 @@ class Play extends Component
         ]))->layout('components.layouts.game');
     }
 
-    public function updateBoard($board)
+    public function playCards(int $key): void
     {
-        $this->status = GameStatus::ANIMATIONS;
+        if (! $this->yourTurn) {
+            return;
+        }
 
-        $this->playerId = auth()->user()->id;
-        $this->opponentId = $this->game->opponentId($this->playerId);
 
-        $opponent = $board["player_{$this->opponentId}"];
-        $player = $board["player_{$this->playerId}"];
-
-        $this->opponent = Player::make()
-            ->power($opponent['power'])
-            ->energy($opponent['energy'])
-            ->user(User::find($opponent['user']['id']))
-            ->deck($opponent['deck'])
-            ->hand($opponent['hand'])
-            ->board($opponent['board']);
-
-        $this->player = Player::make()
-            ->power($player['power'])
-            ->energy($player['energy'])
-            ->user(User::find($player['user']['id']))
-            ->deck($player['deck'])
-            ->hand($player['hand'])
-            ->board($player['board']);
     }
 
     private function queue(mixed $job): void
@@ -146,6 +130,33 @@ class Play extends Component
 
         $this->playerStart = clone $this->player;
         $this->opponentStart = clone $this->opponent;
+    }
+
+    private function updateBoard($board)
+    {
+        $this->status = GameStatus::ANIMATIONS;
+
+        $this->playerId = auth()->user()->id;
+        $this->opponentId = $this->game->opponentId($this->playerId);
+
+        $opponent = $board["player_{$this->opponentId}"];
+        $player = $board["player_{$this->playerId}"];
+
+        $this->opponent = Player::make()
+            ->power($opponent['power'])
+            ->energy($opponent['energy'])
+            ->user(User::find($opponent['user']['id']))
+            ->deck($opponent['deck'])
+            ->hand($opponent['hand'])
+            ->board($opponent['board']);
+
+        $this->player = Player::make()
+            ->power($player['power'])
+            ->energy($player['energy'])
+            ->user(User::find($player['user']['id']))
+            ->deck($player['deck'])
+            ->hand($player['hand'])
+            ->board($player['board']);
     }
 
     private function saveGameData(): void

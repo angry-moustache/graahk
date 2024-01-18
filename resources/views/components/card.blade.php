@@ -22,7 +22,11 @@
     <h3 class="absolute top-[5%] left-[21%] w-full font-bold">{{ $card->name }}</h3>
 
     <span class="absolute bottom-[36.5%] left-[8%] w-[80%] text-lg">
-        {{ $card->tribes ?? $card->getTribes()->join(', ') }}
+        @if (is_string($card->tribes))
+            {{ $card->tribes }}
+        @else
+            {{ $card->getTribes()->join(', ') }}
+        @endif
     </span>
 
     <p class="absolute top-[65%] bottom-[14%] left-[9%] w-[82%] overflow-y-auto">

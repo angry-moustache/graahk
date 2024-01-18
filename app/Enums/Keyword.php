@@ -26,11 +26,11 @@ enum Keyword: string implements HasLabel
     public function toText(array $parameters = []): ?string
     {
         return match ($this) {
-            self::PROTECT => 'Protect.',
-            self::RUSH => 'Rush.',
-            self::GHOSTLY => 'Ghostly.',
-            self::SCENERY => 'Scenery.',
-            self::DRAINED => 'Drained.',
+            self::PROTECT => 'Protect',
+            self::RUSH => 'Rush',
+            self::GHOSTLY => 'Ghostly',
+            self::SCENERY => 'Scenery',
+            self::DRAINED => 'Drained',
         };
     }
 }

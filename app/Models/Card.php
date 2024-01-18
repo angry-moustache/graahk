@@ -66,15 +66,26 @@ class Card extends Model
                 . $this->masked_text;
         }
 
-        return Collection::wrap($this->effects)->map(function (array $effect) {
-            return implode(' ', [
-                Trigger::tryFrom($effect['trigger'])?->toText(),
+        $effects = Collection::wrap($this->effects);
+        $text = '';
+
+        for ($i = 0; $i < $effects->count(); $i++) {
+            $trigger = null;
+            $effect = $effects[$i];
+            if ($effect['trigger'] === ($effects[$i - 1]['trigger'] ?? false)) {
+                $trigger = ', then ';
+            }
+
+            $text .= implode(' ', [
+                $trigger ?? Trigger::tryFrom($effect['trigger'])?->toText(),
                 Effect::tryFrom($effect['effect'])?->toText($effect),
-            ]) . '. ';
-        })
+            ]);
+        }
+
+        return collect([strlen($text) > 0 ? $text . '.' : ''])
             ->prepend($keywords)
             ->flatten()
-            ->join(' ');
+            ->join('. ');
     }
 
     public function toJavaScript(): array

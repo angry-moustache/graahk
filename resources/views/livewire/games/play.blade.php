@@ -1,31 +1,37 @@
 <div
     class="flex h-screen w-screen overflow-hidden"
     x-data="{
-        queue: @js($queue->jobs),
+        queue: [],
         animations: [],
         init () {
-            this.fireQueue(this.queue)
+            window.setInterval(() => {
+                if (this.queue.length === 0) return
+
+                const job = this.queue.shift()
+                job.job(job.object)
+            }, 100)
+
             channel.bind('update-queue', (data) => {
-                this.fireQueue(data.queue)
+                data.queue.forEach((_job) => {
+                    this.queue.push({
+                        'object': _job,
+                        'job': (job) => {
+                            window.setTimeout(() => this.animations.push(job.job), job.job.duration)
+                        }
+                    })
+                })
             })
         },
-        fireQueue (queue) {
-            let carry = 0
-            queue.forEach((job) => {
-                window.setTimeout(() => {
-                    this.animations.push(job.job)
-                    $wire.dispatch('update-board', { board: job.board })
-                }, carry)
-
-                carry += job.job.duration
-            })
-        }
     }"
 >
-    <div class="absolute inset-0 pointer-events-none z-90">
-        {{-- <template x-for="animation in animations" :key="animation.name">
-            <img x-bind:src="'/images/animations/' + animation.name + '.png'" />
-        </template> --}}
+    <div class="absolute inset-0 pointer-events-none z-90 overflow-hidden">
+        <template x-for="animation in animations" :key="animation.uuid">
+            <img
+                x-key="animation.uuid"
+                x-bind:src="'/images/animations/' + animation.name + '.png'"
+                class="absolute top-0"
+            />
+        </template>
     </div>
 
     <div class="flex flex-col gap-4 h-screen w-[15rem] bg-surface border-r border-r-border">

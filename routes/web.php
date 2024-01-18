@@ -30,8 +30,8 @@ Route::middleware([Authenticate::class])->group(function () {
         ->name('game.play');
 });
 
-// Route::get('test', function () {
-//     \App\Models\Card::whereDoesntHave('sets')->get()->each(function ($card) {
-//         $card->sets()->attach(1);
-//     });
-// });
+Route::get('test', function () {
+    \App\Models\Card::where('name', 'Free Food')->get()->each(function ($card) {
+        $card->toText();
+    });
+});
