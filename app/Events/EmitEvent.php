@@ -10,7 +10,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Support\Str;
 
-class EmitTrigger implements ShouldBroadcast
+class EmitEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -18,7 +18,7 @@ class EmitTrigger implements ShouldBroadcast
 
     public function __construct(
         private Game $game,
-        public Trigger $trigger,
+        public Trigger $event,
         public array $data = [],
 
     ) {
@@ -32,6 +32,6 @@ class EmitTrigger implements ShouldBroadcast
 
     public function broadcastAs()
     {
-        return 'trigger';
+        return 'event';
     }
 }

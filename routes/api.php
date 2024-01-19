@@ -8,6 +8,6 @@ use Illuminate\Support\Facades\Route;
 // });
 
 Route::put('games/{game:id}', [Api\GameController::class, 'update']);
-Route::post('games/{game:id}/trigger', Api\TriggerController::class);
+Route::post('games/{game:id}/event', Api\EventController::class);
 
 Route::get('cards/{card:id}', [Api\CardController::class, 'show']);

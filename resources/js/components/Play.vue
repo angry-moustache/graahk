@@ -49,7 +49,10 @@
         End Turn
       </button>
 
-      <div v-html="jobs.length"></div>
+      <div>
+        Jobs running:
+        <span v-html="jobs.length"></span>
+      </div>
     </div>
   </div>
 </template>
@@ -94,7 +97,7 @@ export default {
       this.jobs.shift()() // Do the job
 
       Game.updateGameState(this.gameState)
-    }, 100)
+    }, 200)
   },
   methods: {
     // Add events to the queue
@@ -171,19 +174,30 @@ export default {
       }
     },
     // Game functions
-    checkTriggers (trigger) {
-      Game.checkTriggers(trigger)
+    checkTriggers (trigger, target = null) {
+      Game.checkTriggers(trigger, target)
     },
     endTurn () {
       if (! this.canAddToQueue) return
-      Game.trigger('end_turn')
+      Game.event('end_turn')
     },
-    effect (effect, data) {
-      Game.effect(effect, data)
+    effect (effect, data, target = null) {
+      Game.effect(effect, data, target)
     },
     playerFromId (id) {
-      return id === this.playerId ? this.player : this.opponent
+      return id == this.playerId ? this.player : this.opponent
     },
+    resolveTarget (target) {
+      switch (target.type) {
+        case 'player': return this.playerFromId(target.id); break
+        case 'dude':
+          let card = target.player.board[target.index]
+          card.index = target.index
+          return card;
+          break
+        default: console.error('Invalid target type'); break
+      }
+    }
   },
   computed: {
     canAddToQueue() {

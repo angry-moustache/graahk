@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\Trigger;
-use App\Events\EmitTrigger;
+use App\Events\EmitEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use Illuminate\Http\Request;
 
-class TriggerController extends Controller
+class EventController extends Controller
 {
     public function __invoke(Game $game, Request $request)
     {
-        $trigger = Trigger::from($request->trigger);
+        $event = Trigger::from($request->event);
 
-        EmitTrigger::dispatch($game, $trigger, $request->data ?? []);
+        EmitEvent::dispatch($game, $event, $request->data ?? []);
     }
 }
