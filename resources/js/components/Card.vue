@@ -1,11 +1,15 @@
 <template>
   <div
-      v-bind:style="{ backgroundImage: 'url(' + card.image + ')' }"
       class="
           graahk-card w-full max-w-[10rem] rounded-xl overflow-hidden
           bg-cover bg-center relative
           text-black select-none aspect-[2.5/3.5]
       "
+      v-bind:style="{ backgroundImage: `url('${card.image}')` }"
+      v-bind:class="{
+        'border border-green-500': canPlay
+      }"
+      v-on:click="canPlay && $emit('play-card', cardKey)"
   >
       <img src="/images/cards/dude-1.svg" />
 
@@ -41,6 +45,11 @@ export default {
   name: 'card',
   props: {
     card: Object,
+    cardKey: Number,
+    canPlay: Boolean,
+  },
+  mounted () {
+    window.resizeCards()
   },
 }
 </script>

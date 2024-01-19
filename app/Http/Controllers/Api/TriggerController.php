@@ -12,10 +12,8 @@ class TriggerController extends Controller
 {
     public function __invoke(Game $game, Request $request)
     {
-        $request->validate(['trigger' => 'required']);
-
         $trigger = Trigger::from($request->trigger);
 
-        EmitTrigger::dispatch($game, $trigger);
+        EmitTrigger::dispatch($game, $trigger, $request->data ?? []);
     }
 }

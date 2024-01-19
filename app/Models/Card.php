@@ -100,6 +100,8 @@ class Card extends Model
             'originalPower' => $this->power,
             'tribes' => $this->getTribes()->join(', '),
             'text' => $this->toText(),
+            'effects' => $this->effects,
+            'ready' => Collection::wrap($this->keywords)->contains(Keyword::RUSH->value),
         ];
     }
 

@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Servers;
 
+use App\Models\Deck;
 use App\Models\Game;
+use App\Models\User;
 use Livewire\Component;
 
 class Index extends Component
@@ -61,6 +63,18 @@ class Index extends Component
         $gameData = $game->data;
         $gameData['decks'][$player2] = $this->fields['deck_id'];
         $gameData['current_player'] = rand(0, 1) ? $player2 : $player1;
+
+        foreach ($gameData['decks'] as $player => $deck) {
+            $gameData["player_{$player}"] = [
+                'user' => User::find($player)->toArray(),
+                'board' => [],
+                'hand' => [],
+                'graveyard' => [],
+                'deck' => Deck::find($deck)->idList()->shuffle()->toArray(),
+                'energy' => 0,
+                'power' => 2000,
+            ];
+        }
 
         $game->update([
             'data' => $gameData,
