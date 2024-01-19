@@ -9,7 +9,7 @@
       v-bind:class="{
         'border-white': dude.ready,
         'border-black': ! dude.ready,
-        'border-green-500': dude.highlighted,
+        '!border-green-500': dude.highlighted,
       }"
     ></div>
 
@@ -21,7 +21,7 @@
         v-bind:class="{
           'border-white': dude.ready,
           'border-black': ! dude.ready,
-          'border-green-500': dude.highlighted,
+          '!border-green-500': dude.highlighted,
         }"
       >
         <span

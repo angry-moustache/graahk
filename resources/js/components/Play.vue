@@ -1,37 +1,45 @@
 <template>
   <div class="flex h-screen w-screen overflow-hidden">
     <div class="flex flex-col gap-4 h-screen w-[15rem] bg-surface border-r border-r-border justify-between">
-      <Player :player="opponent" />
-      <Player :player="player" :reverse="true" />
+      <Player
+        :player="game.opponent"
+        v-on:click="target(game.opponent)"
+      />
+
+      <Player
+        :player="game.player"
+        :reverse="true"
+        v-on:click="target(game.opponent)"
+      />
     </div>
 
     <div class="flex flex-col grow">
-      <Board :board="opponent.board" :active="! areCurrentPlayer">
+      <Board :board="game.opponent.board" :active="! game.areCurrentPlayer()">
         <Dude
-          v-for="(dude, key) in opponent.board"
+          v-for="(dude, key) in game.opponent.board"
           v-bind:key="key"
           :dude="dude"
-          v-on:click="targetOpponentDude(dude)"
+          v-on:click="target(dude)"
         />
       </Board>
 
-      <Board :board="player.board" :active="areCurrentPlayer">
+      <Board :board="game.player.board" :active="game.areCurrentPlayer()">
         <Dude
-          v-for="(dude, key) in player.board"
+          v-for="(dude, key) in game.player.board"
           v-bind:key="key"
           :dude="dude"
-          v-on:click="targetDude(dude)"
+          v-on:click="target(dude)"
         />
       </Board>
 
       <div class="relative flex justify-evenly h-[20vh] border-t border-t-border bg-surface">
         <div class="absolute left-0 right-0 -bottom-[4rem] flex justify-center items-center gap-2">
           <Card
-            v-for="(card, key) in player.hand"
+            v-for="(card, key) in game.player.hand"
             v-bind:key="key"
             :card="card"
             :card-key="key"
-            :can-play="areCurrentPlayer && card.cost <= player.energy"
+            :can-play="game.areCurrentPlayer() && card.cost <= game.player.energy"
             v-on:play-card="playCard"
           />
         </div>
@@ -62,7 +70,7 @@ import Card from './Card.vue'
 import Board from './Board.vue'
 import Dude from './Dude.vue'
 import Player from './Player.vue'
-import Game from '../helpers/game'
+import { Game } from '../helpers/game'
 
 export default {
   name: 'game',
@@ -74,150 +82,87 @@ export default {
   },
   data () {
     return {
-      gameState: JSON.parse(this.startingGameState),
       jobs: [],
-      targetingWith: false,
-      playingCard: false,
-      doDeathSweep: false,
+      game: null,
+      gameState: JSON.parse(this.startingGameState),
+      loading: false,
+      targeting: false,
     }
   },
-  mounted () {
-    Game.init(this)
+  created () {
+    this.game = new Game(this)
+    window.game = this.game
 
     window.setInterval(() => {
-      if (this.jobs.length === 0) {
-        if (this.doDeathSweep) {
-          this.doDeathSweep = false
-          Game.deathSweep()
-        }
+      if (this.jobs.length === 0) return
+      this.jobs.shift().resolve()
+      if (this.jobs.length === 0) this.game.updateGameState()
+    }, 10)
 
-        return
-      }
-
-      this.jobs.shift()() // Do the job
-
-      Game.updateGameState(this.gameState)
-    }, 200)
+    window.resizeCards()
   },
   methods: {
-    // Add events to the queue
-    queue (event, pos = 'start') {
-      if (! Array.isArray(event)) {
-        event = [event]
-      }
+    // Targeting
+    target (target) {
+      console.log(target)
+      if (! this.canDoAnything()) return
 
-      this.doDeathSweep = true
+      if (this.targeting) {
+        // Unselect current target
+        if (target.uuid === this.targeting.uuid) {
+          this.targeting.highlighted = false
+          this.targeting = false
 
-      if (pos === 'end') {
-        this.jobs = [...this.jobs, ...event]
-      } else if (pos === 'start') {
-        this.jobs = [...event, ...this.jobs]
-      }
-    },
-    // Play a card if you can
-    playCard (key) {
-      if (! this.areCurrentPlayer) return
-
-      if (this.player.hand[key].cost > this.player.energy) return
-
-      this.queue(() => Game.playCard(key), 'end')
-    },
-    // Do something when clicking your dudes
-    targetDude (dude) {
-      if (! this.canAddToQueue) return
-
-      // Starting a new target
-      if (! this.targetingWith) {
-        if (! dude.ready) return
-
-        this.targetingWith = dude
-        dude.highlighted = true
-
-        return
-      }
-
-      // Selecting a target
-      if (this.targetingWith) {
-        if (dude === this.targetingWith) {
-          dude.highlighted = false
-          this.targetingWith = false
           return
         }
 
-        // this.targetingWith.highlighted = false
-        // this.targetingWith = false
+        // Select opponents target
+        if (target.owner === this.game.opponent.id) {
+          this.game.event('attack', {
+            attacker: this.targeting.uuid,
+            defender: target.uuid,
+          })
 
-        // this.queue(() => Game.attack(this.targetingWith, dude), 'end')
-        return
+          this.targeting.highlighted = false
+          this.targeting = false
+
+          return
+        }
+      } else {
+        // New targeting starting
+        if (! target.ready) return
+
+        // Selecting a friendly dude
+        if (target.owner == this.game.player.id) {
+          this.targeting = target
+          this.targeting.highlighted = true
+
+          return
+        }
       }
     },
-    // Do something when clicking your opponents dudes
-    targetOpponentDude (dude) {
-      if (! this.canAddToQueue) return
-
-      // Selecting a target
-      if (this.targetingWith) {
-        // Attacking
-        this.queue(() => {
-          const attacker = this.targetingWith.power
-          const defender = dude.power
-
-          this.targetingWith.power -= defender
-          dude.power -= attacker
-
-          this.targetingWith.highlighted = false
-          this.targetingWith.ready = false
-          this.targetingWith = false
-        })
-
-        return
+    // Add events to the queue
+    queue (events, pos = 'start') {
+      if (pos === 'end') {
+        this.jobs = [...this.jobs, ...events]
+      } else if (pos === 'start') {
+        this.jobs = [...events, ...this.jobs]
       }
     },
-    // Game functions
-    checkTriggers (trigger, target = null) {
-      Game.checkTriggers(trigger, target)
+    playCard (cardKey) {
+      if (! this.canDoAnything()) return
+      this.game.playCard(cardKey)
     },
     endTurn () {
-      if (! this.canAddToQueue) return
-      Game.event('end_turn')
+      if (! this.canDoAnything()) return
+      this.game.event('end_turn')
     },
     effect (effect, data, target = null) {
-      Game.effect(effect, data, target)
+      this.game.effect(effect, data, target)
     },
-    playerFromId (id) {
-      return id == this.playerId ? this.player : this.opponent
+    canDoAnything () {
+      return this.game.areCurrentPlayer() && this.jobs.length === 0 && ! this.isTargeting
     },
-    resolveTarget (target) {
-      switch (target.type) {
-        case 'player': return this.playerFromId(target.id); break
-        case 'dude':
-          let card = target.player.board[target.index]
-          card.index = target.index
-          return card;
-          break
-        default: console.error('Invalid target type'); break
-      }
-    }
   },
-  computed: {
-    canAddToQueue() {
-      return (this.areCurrentPlayer && this.jobs.length === 0)
-    },
-    areCurrentPlayer () {
-      return this.gameState.current_player === this.playerId
-    },
-    currentPlayer () {
-      return this.areCurrentPlayer ? this.player : this.opponent
-    },
-    currentOpponent () {
-      return this.areCurrentPlayer ? this.opponent : this.player
-    },
-    player () {
-      return this.gameState.player
-    },
-    opponent () {
-      return this.gameState.opponent
-    },
-  }
 }
 </script>

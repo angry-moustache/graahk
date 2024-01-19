@@ -6,18 +6,26 @@ use Filament\Support\Contracts\HasLabel;
 
 enum Target: string implements HasLabel
 {
+    // Players
     case PLAYER = 'player';
     case OPPONENT = 'opponent';
+    case ALL_PLAYERS = 'all_players';
+
+    // Targeted
     case DUDE = 'dude';
     case DUDE_PLAYER = 'dude_player';
     case DUDE_OPPONENT = 'dude_opponent';
-    case ALL_PLAYERS = 'all_players';
+
+    // Area of effect
     case ALL_PLAYER_DUDES = 'all_player_dudes';
-    case ALL_PLAYER_DUDES_NOT_SELF = 'all_player_dudes_not_self';
+    case ALL_OTHER_PLAYER_DUDES = 'all_other_player_dudes';
     case ALL_OPPONENT_DUDES = 'all_opponent_dudes';
+
     case ALL_DUDES = 'all_dudes';
     case ALL_OTHER_DUDES = 'all_other_dudes';
     case EVERYTHING = 'everything';
+
+    // Self
     case ITSELF = 'itself';
 
     public function getLabel(): ?string
@@ -30,7 +38,7 @@ enum Target: string implements HasLabel
             self::DUDE_OPPONENT => 'Dude (opponent)',
             self::ALL_PLAYERS => 'All players',
             self::ALL_PLAYER_DUDES => 'All player dudes',
-            self::ALL_PLAYER_DUDES_NOT_SELF => 'All player dudes except itself',
+            self::ALL_OTHER_PLAYER_DUDES => 'All player dudes except itself',
             self::ALL_OPPONENT_DUDES => 'All opponent dudes',
             self::ALL_DUDES => 'All dudes',
             self::ALL_OTHER_DUDES => 'All other dudes',
@@ -49,7 +57,7 @@ enum Target: string implements HasLabel
             self::DUDE_OPPONENT => 'a dude your opponent controls',
             self::ALL_PLAYERS => 'all players',
             self::ALL_PLAYER_DUDES => 'all dudes you control',
-            self::ALL_PLAYER_DUDES_NOT_SELF => 'all other dudes you control',
+            self::ALL_OTHER_PLAYER_DUDES => 'all other dudes you control',
             self::ALL_OPPONENT_DUDES => 'all dudes your opponent controls',
             self::ALL_DUDES => 'all dudes',
             self::ALL_OTHER_DUDES => 'all other dudes',

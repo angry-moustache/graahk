@@ -5,6 +5,7 @@ namespace App\Livewire\Servers;
 use App\Models\Deck;
 use App\Models\Game;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Livewire\Component;
 
 class Index extends Component
@@ -66,7 +67,8 @@ class Index extends Component
 
         foreach ($gameData['decks'] as $player => $deck) {
             $gameData["player_{$player}"] = [
-                'user' => User::find($player)->toArray(),
+                'id' => User::find($player)->id,
+                'uuid' => (string) Str::uuid(),
                 'board' => [],
                 'hand' => [],
                 'graveyard' => [],

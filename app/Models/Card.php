@@ -10,6 +10,7 @@ use App\Enums\Tribe;
 use App\Enums\Trigger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use stdClass;
 
 class Card extends Model
@@ -92,6 +93,7 @@ class Card extends Model
     {
         return [
             'id' => $this->id,
+            'uuid' => (string) Str::uuid(),
             'name' => $this->name,
             'image' => $this->attachment->path(),
             'cost' => $this->cost,
@@ -100,7 +102,9 @@ class Card extends Model
             'originalPower' => $this->power,
             'tribes' => $this->getTribes()->join(', '),
             'text' => $this->toText(),
+            'keywords' => $this->keywords,
             'effects' => $this->effects,
+            'type' => $this->type,
             'ready' => Collection::wrap($this->keywords)->contains(Keyword::RUSH->value),
         ];
     }

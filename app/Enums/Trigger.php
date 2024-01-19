@@ -11,6 +11,7 @@ enum Trigger: string implements HasLabel
 
     case START_TURN = 'start_turn';
     case END_TURN = 'end_turn';
+
     case GAIN_ENERGY = 'gain_energy';
 
     case PLAY_DUDE = 'play_dude';
