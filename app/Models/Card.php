@@ -80,7 +80,7 @@ class Card extends Model
             $text .= implode(' ', [
                 $trigger ?? Trigger::tryFrom($effect['trigger'])?->toText(),
                 Effect::tryFrom($effect['effect'])?->toText($effect),
-            ]);
+            ]) . '. ';
         }
 
         return collect([strlen($text) > 0 ? $text . '.' : ''])

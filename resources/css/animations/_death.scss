@@ -1,0 +1,16 @@
+.animate-death {
+    animation: death 0.5s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+}
+
+@keyframes death {
+    0% {
+        opacity: 1;
+        // transform: scale(1) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        // transform: scale(0) rotate(-90deg);
+    }
+}

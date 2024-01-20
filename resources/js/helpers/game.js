@@ -49,13 +49,17 @@ export class Game {
       case 'all_other_dudes': return [...this.currentPlayer.board, ...this.currentOpponent.board].filter((c) => c.uuid !== owner.uuid); break
       case 'everything': return [...this.currentPlayer.board, ...this.currentOpponent.board, this.currentPlayer, this.currentOpponent]; break
       case 'itself': return [owner]; break
+      default: console.error(`No target type ${type}`); break
     }
   }
 
   // Do something
   effect (effect, data, targets) {
     targets.forEach((target) => {
-      if (target[effect] === undefined) return console.error(`No effect ${effect} on ${target.name}`)
+      if (target[effect] === undefined) {
+        return console.error(`No effect ${effect} on ${target.name}`)
+      }
+
       target[effect](data)
     })
   }
@@ -74,6 +78,7 @@ export class Game {
   checkTriggers (trigger, targets = false) {
     (targets || this.getTargets('all_dudes')).forEach((dude) => {
       dude.effects.filter((e) => e.trigger === trigger).forEach((effect) => {
+        console.log(`Triggering ${effect.effect} on ${dude.name}`)
         this.effect(effect.effect, effect, this.getTargets(effect.target, dude))
       })
     })

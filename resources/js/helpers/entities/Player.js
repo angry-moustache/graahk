@@ -1,5 +1,8 @@
 import { reactive } from 'vue'
 import { Dude } from './Dude'
+import { GainEnergyAnimation } from './animations/GainEnergyAnimation'
+import { ShakeAnimation } from './animations/ShakeAnimation'
+import { DeathAnimation } from './animations/DeathAnimation'
 
 export class Player {
   constructor (player) {
@@ -14,6 +17,10 @@ export class Player {
     this.board = reactive(player.board.map((card) => reactive(new Dude(card))))
   }
 
+  $ref () {
+    return window.game._vue.$refs['player-' + this.uuid]
+  }
+
   cleanup (game) {
     let deaths = this.board
       .filter((card) => card.power <= 0)
@@ -24,8 +31,11 @@ export class Player {
     deaths.forEach((card) => {
       card.dead = true
 
-      this.graveyard.push(card)
-      this.board.splice(this.board.map((c) => c.uuid).indexOf(card.uuid), 1)
+      console.log('death animation starting')
+      new DeathAnimation({ target: card }).resolve(() => {
+        this.graveyard.push(card)
+        this.board.splice(this.board.map((c) => c.uuid).indexOf(card.uuid), 1)
+      })
     })
 
     game.checkTriggers('leave_field', deaths)
@@ -34,12 +44,17 @@ export class Player {
   gain_energy (data) {
     this.energy += parseInt(data.amount)
     game.checkTriggers('gain_energy', this.board)
+
+    new GainEnergyAnimation({ target: this }).resolve()
   }
 
   async spawn_token (data) {
-    let token = await axios.get(`/api/cards/${data.token}`)
-    token.data.owner = this.id
-    this.board.push(new Dude(token.data))
+    let token
+    for (let index = 0; index < data.amount; index++) {
+      token = await axios.get(`/api/cards/${data.token}`)
+      token.data.owner = this.id
+      this.board.push(new Dude(token.data))
+    }
   }
 
   async draw_cards (data) {
@@ -55,6 +70,8 @@ export class Player {
 
   deal_damage (data) {
     this.power -= data.amount
+
+    new ShakeAnimation({ target: this }).resolve()
   }
 
   ready_dudes () {

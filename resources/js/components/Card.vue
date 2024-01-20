@@ -1,13 +1,14 @@
 <template>
   <div
       class="
-          graahk-card w-full max-w-[10rem] rounded-xl overflow-hidden
+          graahk-card w-full rounded-xl overflow-hidden
           bg-cover bg-center relative
           text-black select-none aspect-[2.5/3.5]
       "
       v-bind:style="{ backgroundImage: `url('${card.image}')` }"
       v-bind:class="{
-        'border border-green-500': canPlay
+        'border border-green-500': canPlay,
+        'max-w-[10rem]': ! fullSized,
       }"
       v-on:click="canPlay && $emit('play-card', cardKey)"
   >
@@ -47,6 +48,10 @@ export default {
     card: Object,
     cardKey: Number,
     canPlay: Boolean,
+    fullSized: {
+      type: Boolean,
+      default: false,
+    },
   },
   mounted () {
     window.resizeCards()

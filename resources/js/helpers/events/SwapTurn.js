@@ -1,4 +1,5 @@
 import { Job } from "../entities/Job"
+import { GainEnergyAnimation } from "../entities/animations/GainEnergyAnimation"
 
 export class SwapTurn {
   resolve (game) {

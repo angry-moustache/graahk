@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex justify-center">
+  <div class="relative flex justify-center origin-center">
     <div
       v-bind:style="{ backgroundImage: `url('${dude.image}')` }"
       class="
