@@ -3,9 +3,13 @@
     class="flex flex-col h-[40vh] w-full justify-center"
     v-bind:class="{ 'bg-surface': ! active, 'bg-background': active }"
   >
-    <div class="flex flex-wrap h-[30vh] w-full gap-4 items-center justify-evenly">
+    <transition-group
+      class="flex flex-wrap h-[30vh] w-full gap-4 items-center justify-evenly"
+      name="dude"
+      tag="div"
+    >
       <slot></slot>
-    </div>
+    </transition-group>
   </div>
 </template>
 

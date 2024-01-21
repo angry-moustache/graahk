@@ -8,8 +8,10 @@ export class ActivatedAnimation extends Animation {
     this.duration = 100
   }
 
-  resolve () {
-    this.addClass(this.data.target.$ref().$el, 'animate-activated')
+  async resolve () {
+    this.addClass(this.data.target.$el(), 'animate-activated')
     super.resolve()
+
+    await timeout(this.grace)
   }
 }

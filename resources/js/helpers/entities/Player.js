@@ -2,7 +2,6 @@ import { reactive } from 'vue'
 import { Dude } from './Dude'
 import { GainEnergyAnimation } from './animations/GainEnergyAnimation'
 import { ShakeAnimation } from './animations/ShakeAnimation'
-import { DeathAnimation } from './animations/DeathAnimation'
 
 export class Player {
   constructor (player) {
@@ -10,6 +9,7 @@ export class Player {
     this.uuid = player.uuid
     this.owner = player.id
     this.power = player.power
+    this.originalPower = player.power
     this.energy = player.energy
     this.hand = reactive(player.hand)
     this.deck = reactive(player.deck)
@@ -19,6 +19,10 @@ export class Player {
 
   $ref () {
     return window.game._vue.$refs['player-' + this.uuid]
+  }
+
+  $el () {
+    return this.$ref().$el
   }
 
   cleanup (game) {
@@ -31,21 +35,24 @@ export class Player {
     deaths.forEach((card) => {
       card.dead = true
 
-      console.log('death animation starting')
-      new DeathAnimation({ target: card }).resolve(() => {
-        this.graveyard.push(card)
-        this.board.splice(this.board.map((c) => c.uuid).indexOf(card.uuid), 1)
-      })
+      // VueJS handles the animation
+      this.graveyard.push(card)
+      this.board.splice(this.board.map((c) => c.uuid).indexOf(card.uuid), 1)
     })
 
     game.checkTriggers('leave_field', deaths)
   }
 
   gain_energy (data) {
-    this.energy += parseInt(data.amount)
-    game.checkTriggers('gain_energy', this.board)
-
-    new GainEnergyAnimation({ target: this }).resolve()
+    window.game._vue.queue(() => {
+      new GainEnergyAnimation({ target: this }).resolve(
+        () => this.energy += parseInt(data.amount),
+        () => {
+          console.log('GAINED ENERGY')
+          window.nextJob()
+        }
+      )
+    })
   }
 
   async spawn_token (data) {
@@ -76,5 +83,16 @@ export class Player {
 
   ready_dudes () {
     this.board.forEach((card) => card.ready = true)
+  }
+
+  heal (data) {
+    if (this.power > this.originalPower) {
+      return
+    }
+
+    this.power = Math.min(
+      this.power + parseInt(data.amount),
+      this.originalPower
+    )
   }
 }

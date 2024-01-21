@@ -18,9 +18,8 @@ enum Trigger: string implements HasLabel
     case PLAYER_PLAY_DUDE = 'player_play_dude';
     case OPPONENT_PLAY_DUDE = 'opponent_play_dude';
 
-    case DEALING_DAMAGE = 'dealing_damage';
-    case AFTER_DAMAGE = 'after_damage';
     case ATTACK = 'attack';
+    case AFTER_ATTACK = 'after_attack';
 
     case PLAYER_DUDE_DIES = 'dude_dies';
 
@@ -37,8 +36,7 @@ enum Trigger: string implements HasLabel
             self::PLAY_DUDE => 'Anyone plays dude',
             self::PLAYER_PLAY_DUDE => 'You play dude',
             self::OPPONENT_PLAY_DUDE => 'Opponent plays dude',
-            self::DEALING_DAMAGE => 'Dealing damage',
-            self::AFTER_DAMAGE => 'After taking damage',
+            self::AFTER_ATTACK => 'After attacking',
             self::ATTACK => 'Attacks',
             self::PLAYER_DUDE_DIES => 'Dude you control dies',
             self::DRAW_CARD => 'After drawing a card',
@@ -56,8 +54,7 @@ enum Trigger: string implements HasLabel
             self::PLAY_DUDE => 'Whenever anyone plays a dude,',
             self::PLAYER_PLAY_DUDE => 'When you play a dude,',
             self::OPPONENT_PLAY_DUDE => 'When your opponent plays a dude,',
-            self::DEALING_DAMAGE => 'When this dude deals damage,',
-            self::AFTER_DAMAGE => 'After this dude survives damage,',
+            self::AFTER_ATTACK => 'After this dude attacks,',
             self::ATTACK => 'When this dude attacks,',
             self::PLAYER_DUDE_DIES => 'When a dude you control dies,',
             self::DRAW_CARD => 'After you draw a card,',

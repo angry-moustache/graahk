@@ -3,7 +3,6 @@ import { PlayDude } from './events/PlayDude'
 
 import { Player } from './entities/Player'
 import { reactive } from 'vue'
-import { Job } from './entities/Job'
 import { Attack } from './events/Attack'
 
 export class Game {
@@ -38,9 +37,9 @@ export class Game {
     switch (type) {
       case 'player': return [this.currentPlayer]; break
       case 'opponent': return [this.currentOpponent]; break
-      // case 'dude': return ; break
-      // case 'dude_player': return ; break
-      // case 'dude_opponent': return ; break
+      case 'dude': return []; break // TODO
+      case 'dude_player': return []; break // TODO
+      case 'dude_opponent': return []; break // TODO
       case 'all_players': return [this.currentPlayer, this.currentOpponent]; break
       case 'all_player_dudes': return this.currentPlayer.board; break
       case 'all_other_player_dudes': return this.currentPlayer.board.filter((c) => c.uuid !== owner.uuid); break
@@ -53,37 +52,49 @@ export class Game {
     }
   }
 
+  // Check for any triggers after an effect or event has fired
+  async checkTriggers (trigger, targets = false) {
+    console.log(`TRIGGER: ${trigger}`);
+
+    window.game._vue.queue(() => {
+      console.log(`STARTED TRIGGERING: ${trigger}`);
+
+      (targets || this.getTargets('all_dudes')).forEach((dude) => {
+        dude.effects.filter((e) => e.trigger === trigger).forEach((effect) => {
+          this.effect(effect.effect, effect, this.getTargets(effect.target, dude))
+        })
+      })
+
+      console.log(`ENDED TRIGGERING: ${trigger}`);
+
+      window.nextJob()
+    })
+  }
+
   // Do something
   effect (effect, data, targets) {
-    targets.forEach((target) => {
-      if (target[effect] === undefined) {
-        return console.error(`No effect ${effect} on ${target.name}`)
-      }
+    window.game._vue.queue(() => {
+      console.log(`STARTED EFFECT: ${effect}`);
 
-      target[effect](data)
+      targets.forEach(async (target) => {
+        if (target[effect] === undefined) {
+          return console.error(`No effect ${effect} on ${target.uuid}`)
+        }
+
+        console.log(`EFFECT: ${effect}`)
+        target[effect](data)
+      })
+
+      console.log(`ENDED EFFECT: ${effect}`);
+
+      window.nextJob()
     })
   }
 
-  // Cleanup the board
+
   cleanup () {
-    this._vue.queue([
-      new Job(() => {
-        this.player.cleanup(this)
-        this.opponent.cleanup(this)
-      })
-    ])
-  }
-
-  // Check for any triggers after an effect or event has fired
-  checkTriggers (trigger, targets = false) {
-    (targets || this.getTargets('all_dudes')).forEach((dude) => {
-      dude.effects.filter((e) => e.trigger === trigger).forEach((effect) => {
-        console.log(`Triggering ${effect.effect} on ${dude.name}`)
-        this.effect(effect.effect, effect, this.getTargets(effect.target, dude))
-      })
-    })
-
-    this.cleanup()
+    this.player.cleanup(this)
+    this.opponent.cleanup(this)
   }
 
   // Play a card from your hand
@@ -98,8 +109,6 @@ export class Game {
 
   // Send data to the server to update the game state
   updateGameState () {
-    return // DEV
-
     if (! this.areCurrentPlayer()) return
 
     window.setTimeout(() => {

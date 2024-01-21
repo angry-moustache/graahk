@@ -12,4 +12,8 @@ window.pusher = new Pusher(
   { cluster: 'eu' }
 )
 
+window.timeout = (delay) => {
+  return new Promise((resolve) => setTimeout(resolve, delay))
+}
+
 createApp({}).component('Play', Play).mount('#app')

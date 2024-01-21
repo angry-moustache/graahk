@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen w-screen overflow-hidden" v-if="! loading">
+  <div class="flex h-screen w-screen overflow-hidden">
     <Tooltip ref="tooltip" />
 
     <div class="absolute z-20 inset-0 pointer-events-none">
@@ -34,7 +34,6 @@
         <Dude
           v-for="(dude, key) in game.opponent.board"
           v-bind:key="key"
-          :ref="'dude-' + dude.uuid"
           :dude="dude"
           v-on:click="target(dude)"
           v-on:mouseenter="tooltip(dude)"
@@ -48,9 +47,8 @@
         :ref="'board-' + game.player.uuid"
       >
         <Dude
-          v-for="(dude, key) in game.player.board"
-          v-bind:key="key"
-          :ref="'dude-' + dude.uuid"
+          v-for="dude in game.player.board"
+          v-bind:key="dude.uuid"
           :dude="dude"
           v-on:click="target(dude)"
           v-on:mouseenter="tooltip(dude)"
@@ -60,16 +58,18 @@
 
       <div class="relative flex justify-evenly h-[20vh] border-t border-t-border bg-surface">
         <div class="absolute z-10 left-0 right-0 -bottom-[4rem] flex justify-center items-center gap-2">
-          <Card
-            v-for="(card, key) in game.player.hand"
-            v-bind:key="key"
-            :card="card"
-            :card-key="key"
-            :can-play="canDoAnything() && card.cost <= game.player.energy"
-            v-on:play-card="playCard"
-            v-on:mouseenter="tooltip(card)"
-            v-on:mouseleave="tooltip(null)"
-          />
+          <transition-group name="dude">
+            <Card
+              v-for="(card, key) in game.player.hand"
+              v-bind:key="key"
+              :card="card"
+              :card-key="key"
+              :can-play="canDoAnything() && card.cost <= game.player.energy"
+              v-on:play-card="playCard"
+              v-on:mouseenter="tooltip(card)"
+              v-on:mouseleave="tooltip(null)"
+            />
+          </transition-group>
         </div>
       </div>
     </div>
@@ -86,14 +86,25 @@
         End Turn
       </button>
 
+      <button
+        v-on:click="game.updateGameState()"
+        v-bind:class="{
+          'bg-green-500 hover:bg-green-600 cursor-pointer': canDoAnything(),
+          'bg-gray-500 cursor-not-allowed': ! canDoAnything(),
+        }"
+        class="block rounded px-4 py-2 font-bold text-surface"
+      >
+        Save the game
+      </button>
+
       <div>
-        Jobs ready:
-        <span v-html="jobs.length"></span>
+        Jobs running:
+        <span v-html="jobs.isProcessing"></span>
       </div>
 
       <div>
-        Runners ready:
-        <span v-html="runner.length"></span>
+        Jobs total:
+        <span v-html="jobs.count()"></span>
       </div>
     </div>
   </div>
@@ -107,6 +118,9 @@ import Player from './Player.vue'
 import Tooltip from './Tooltip.vue'
 import Animation from './animations/Animation.vue'
 import { Game } from '../helpers/game'
+import { Queue } from '../helpers/entities/Queue'
+
+import { reactive } from 'vue'
 
 export default {
   name: 'game',
@@ -118,10 +132,7 @@ export default {
   },
   data () {
     return {
-      loading: true,
       jobs: [],
-      currentJob: null,
-      runner: [],
       animations: [],
       game: null,
       gameState: JSON.parse(this.startingGameState),
@@ -129,36 +140,20 @@ export default {
     }
   },
   created () {
-    this.game = new Game(this)
-    window.game = this.game
+    this.game = window.game = new Game(this)
+    this.jobs = window.jobs = reactive(new Queue())
 
-    window.setInterval(() => {
-      if (this.jobs.length === 0) return
-      this.startRunner()
-      if (this.jobs.length === 0) this.game.updateGameState()
-    }, 1)
-
-    this.loading = false
-
-    this.$nextTick(() => {
-      window.resizeCards()
-    })
+    this.$nextTick(() => window.resizeCards())
   },
   methods: {
-    startRunner () {
-      if (this.jobs.length === 0 || this.runner.length > 0) return
+    // Add events to the queue
+    async queue (events, pos = 'start') {
+      window.jobs.push(events, pos)
 
-      // check if the current job has finished
-      if (this.currentJob && ! this.currentJob.finished) return
-
-      const job = this.jobs.shift()
-      this.runner.push(job)
-
-      this.currentJob = job
-      job.resolve()
+      if (window.jobs.isProcessing) return
+      window.jobs.processQueue()
     },
-    // Targeting
-    // TODO: move to separate component
+    // Targeting TODO: move to separate component
     target (target) {
       if (! this.canDoAnything()) return
 
@@ -196,14 +191,6 @@ export default {
         }
       }
     },
-    // Add events to the queue
-    queue (events, pos = 'start') {
-      if (pos === 'end') {
-        this.jobs = [...this.jobs, ...events]
-      } else if (pos === 'start') {
-        this.jobs = [...events, ...this.jobs]
-      }
-    },
     playCard (cardKey) {
       if (! this.canDoAnything()) return
       this.game.playCard(cardKey)
@@ -216,16 +203,11 @@ export default {
       this.game.effect(effect, data, target)
     },
     canDoAnything () {
-      return this.game.areCurrentPlayer()
-        && this.jobs.length === 0
-        && this.runner.length === 0
+      return this.game.areCurrentPlayer() && ! this.jobs.isProcessing
     },
     tooltip (card) {
       this.$refs.tooltip.show(card)
     },
-    animate (animation) {
-      console.log(animation)
-    }
   },
 }
 </script>

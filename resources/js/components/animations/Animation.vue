@@ -19,8 +19,5 @@ export default {
   props: {
     animation: Object,
   },
-  created () {
-    console.log(this.animation)
-  },
 }
 </script>

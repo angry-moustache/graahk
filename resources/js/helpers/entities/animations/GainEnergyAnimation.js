@@ -8,7 +8,7 @@ export class GainEnergyAnimation extends Animation {
     this.duration = 100
   }
 
-  resolve () {
+  async resolve (callback, finallyCallback) {
     const div = this.data.target.$ref().$refs.energy
     const width = 200
 
@@ -19,5 +19,15 @@ export class GainEnergyAnimation extends Animation {
     }
 
     super.resolve()
+
+    await window.timeout(this.duration)
+
+    callback()
+
+    await window.timeout(this.grace)
+
+    window.game.checkTriggers('gain_energy', this.board)
+
+    finallyCallback()
   }
 }

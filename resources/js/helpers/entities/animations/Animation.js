@@ -2,14 +2,18 @@ export class Animation {
   constructor (animation, data = {}, duration, grace = 1) {
     this.animation = animation
     this.duration = duration
+
     this.grace = grace
     this.data = data
     this.uuid = Math.floor(Math.random() * 100) + '' + Date.now()
   }
 
   resolve () {
-    game._vue.currentJob.animation = this
     window.game._vue.animations.push(this)
+  }
+
+  fullDuration () {
+    return this.duration + this.grace
   }
 
   addClass ($el, className) {
@@ -22,6 +26,7 @@ export class Animation {
 
   // Let the queue know we're done
   finish () {
-    window.game._vue.currentJob.finish()
+    // window.game._vue.currentJob.finish()
+    console.error('Animation finished called')
   }
 }

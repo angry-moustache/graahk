@@ -8,11 +8,11 @@ export class AttackAnimation extends Animation {
     this.grace = 500
   }
 
-  resolve (callback) {
+  async resolve (callback) {
     super.resolve()
 
-    const attacker = this.data.attacker.$ref().$el
-    const defender = this.data.defender.$ref().$el
+    const attacker = this.data.attacker.$el()
+    const defender = this.data.defender.$el()
 
     attacker.style.zIndex = 100
     attacker.style.translate = `0px 0px`
@@ -20,7 +20,7 @@ export class AttackAnimation extends Animation {
 
     this.addClass(attacker, 'animate-attacking')
 
-    window.setTimeout(() => {
+    await timeout(100).then(async () => { /* Dude getting up to attack */
       // Move the attacker on top of the defender
       // Make sure we end up in the middle of the card, even if we attack from above
       const offsetLeftCenter = (defender.offsetWidth - attacker.offsetWidth) / 2
@@ -29,18 +29,15 @@ export class AttackAnimation extends Animation {
         ${defender.offsetTop - attacker.offsetTop + defender.offsetHeight / 2}px
       `
 
-      // Deal damage after it resolves
-      window.setTimeout(() => callback(), this.duration)
-
       // Return to its position
-      window.setTimeout(() => {
+      await timeout(this.duration).then(() => { /* Dude Returning */
+        callback(this) // Deal damage
+
         if (! attacker) return
 
         attacker.style.transition = `all ${this.grace}ms linear`
         attacker.style.translate = `0px 0px`
-
-        window.setTimeout(() => this.finish(), this.grace /* Attack has completed */)
-      }, this.duration /* Dude attacking */)
-    }, 100 /* Dude getting up to attack */)
+      })
+    })
   }
 }

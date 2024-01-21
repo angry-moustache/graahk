@@ -1,4 +1,3 @@
-import { Job } from "./Job"
 import { ActivatedAnimation } from "./animations/ActivatedAnimation"
 import { ShakeAnimation } from "./animations/ShakeAnimation"
 
@@ -6,6 +5,7 @@ export class Dude {
   constructor (card) {
     this.id = card.id
     this.owner = card.owner
+    this.opponent = card.opponent
     this.cost = card.cost
     this.effects = card.effects
     this.type = card.type
@@ -20,17 +20,15 @@ export class Dude {
     this.tribes = card.tribes
     this.uuid = card.uuid
     this.dead = card.dead || false
+    this.visualEffects = card.visualEffects || []
   }
 
-  $ref () {
-    return window.game._vue.$refs['dude-' + this.uuid][0]
+  $el () {
+    return document.getElementById('dude-' + this.uuid)
   }
 
   async reset () {
-    let uuid = this.uuid
     let card = await axios.get(`/api/cards/${this.id}`)
-    card.data.uuid = uuid
-
     Object.assign(this, new Dude(card.data))
   }
 
@@ -38,16 +36,18 @@ export class Dude {
     this.power = this.originalPower
   }
 
+  async silence () {
+    this.effects = []
+    this.keywords = []
+
+    this.visualEffects.push('silenced')
+
+    await new ActivatedAnimation({ target: this }).resolve()
+  }
+
   deal_damage (data) {
     this.power -= data.amount
-
-    new ShakeAnimation({ target: this }).resolve(() => {
-      if (this.power > 0) {
-        window.game._vue.queue([
-          new Job(() => window.game.checkTriggers('after_damage', [this]))
-        ])
-      }
-    })
+    new ShakeAnimation({ target: this }).resolve()
   }
 
   heal (data) {
@@ -69,13 +69,15 @@ export class Dude {
     this.ready = true
   }
 
-  buff_dude (data) {
+  async buff_dude (data) {
     this.power += parseInt(data.amount)
 
-    new ActivatedAnimation({ target: this }).resolve()
+    await new ActivatedAnimation({ target: this }).resolve()
   }
 
   bounce () {
+    if (this.power <= 0) return
+
     let player = window.game.playerById(this.owner)
 
     player.board.splice(player.board.map((c) => c.uuid).indexOf(this.uuid), 1)

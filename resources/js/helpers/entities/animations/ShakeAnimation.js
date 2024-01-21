@@ -8,10 +8,8 @@ export class ShakeAnimation extends Animation {
     this.grace = 400
   }
 
-  resolve (callback = null) {
-    this.addClass(this.data.target.$ref().$el, 'animate-shake')
+  async resolve () {
+    this.addClass(this.data.target.$el(), 'animate-shake')
     super.resolve()
-
-    if (callback) callback()
   }
 }

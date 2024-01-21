@@ -1,5 +1,8 @@
 <template>
-  <div class="relative flex justify-center origin-center">
+  <div
+    :id="'dude-' + dude.uuid"
+    class="relative flex justify-center origin-center"
+  >
     <div
       v-bind:style="{ backgroundImage: `url('${dude.image}')` }"
       class="
@@ -12,6 +15,7 @@
         '!border-green-500': dude.highlighted,
       }"
     ></div>
+      <span class="absolute opacity-50" v-text="dude.uuid" />
 
       <div
         class="
@@ -30,7 +34,7 @@
             'text-green-500': dude.originalPower < dude.power,
             'text-red-500': dude.originalPower > dude.power,
           }"
-        ></span>
+        />
       </div>
   </div>
 </template>

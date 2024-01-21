@@ -1,5 +1,3 @@
-import { Job } from "../entities/Job"
-import { AsyncJob } from "../entities/AsyncJob"
 import { AttackAnimation } from "../entities/animations/AttackAnimation"
 
 export class Attack {
@@ -8,30 +6,29 @@ export class Attack {
     let defender = [game.player, game.opponent, ...game.player.board, ...game.opponent.board].find((c) => c.uuid === event.data.defender)
 
     game._vue.queue([
-      new Job(() => {
+      (() => {
         game.checkTriggers('attack', [attacker])
+        window.nextJob()
       }),
-      new Job(() => {
-        game.checkTriggers('dealing_damage', [attacker])
-      }),
-      new AsyncJob(() => {
-        console.log(3)
+      (() => {
         let a, d
         [d, a] = [defender.power, attacker.power]
+        attacker.ready = false
 
-        new AttackAnimation({ attacker: attacker, defender: defender }).resolve(() => {
-          console.log(3.5)
+        new AttackAnimation({ attacker: attacker, defender: defender }).resolve(async (animation) => {
           defender.deal_damage({ amount: a })
           if (defender.constructor.name !== 'Player') {
             attacker.deal_damage({ amount: d })
           }
 
-          attacker.ready = false
+          await timeout(animation.grace + 100).then(() => {
+            window.nextJob()
+          })
         })
       }),
-      new Job(() => {
-        console.log(4)
-        game.checkTriggers('after_damage', [attacker])
+      (() => {
+        game.checkTriggers('after_attack', [attacker])
+        window.nextJob()
       }),
     ])
   }
