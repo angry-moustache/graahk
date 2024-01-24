@@ -2,10 +2,13 @@
 
 namespace App\Enums;
 
+use App\Enums\Traits\HasList;
 use Filament\Support\Contracts\HasLabel;
 
 enum Tribe: string implements HasLabel
 {
+    use HasList;
+
     case HUMAN = 'human';
     case SPOIDER = 'spoider';
     case CTHULHIAN = 'cthulhian';
@@ -15,6 +18,8 @@ enum Tribe: string implements HasLabel
     case FATED = 'fated';
     case PHANTOM = 'phantom';
     case GILLED_GUILD = 'gilled_guild';
+    case DESPAIR = 'despair';
+    case EL_DORADO = 'el_dorado';
 
     public function getLabel(): ?string
     {
@@ -28,6 +33,8 @@ enum Tribe: string implements HasLabel
             self::FATED => 'Fated',
             self::PHANTOM => 'Phantom',
             self::GILLED_GUILD => 'Gilled Guild',
+            self::DESPAIR => 'Despair',
+            self::EL_DORADO => 'El Dorado',
         };
     }
 
@@ -43,6 +50,8 @@ enum Tribe: string implements HasLabel
             self::FATED => 'Fated',
             self::PHANTOM => 'Phantom',
             self::GILLED_GUILD => 'Gilled Guild',
+            self::DESPAIR => 'Despair',
+            self::EL_DORADO => 'El Dorado',
         };
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Servers;
 
+use App\Models\Card;
 use App\Models\Deck;
 use App\Models\Game;
 use App\Models\User;
@@ -72,9 +73,19 @@ class Index extends Component
                 'board' => [],
                 'hand' => [],
                 'graveyard' => [],
-                'deck' => Deck::find($deck)->idList()->shuffle()->toArray(),
+                'deck' => Deck::find($deck)
+                    ->idList()
+                    ->shuffle()
+                    ->map(fn (int $id) => Card::find($id)->toJavaScript())
+                    ->map(function (array $card) use ($player) {
+                        $card['owner'] = $player;
+
+                        return $card;
+                    })
+                    ->toArray(),
                 'energy' => 0,
                 'power' => 2000,
+                'originalPower' => 2000,
             ];
         }
 

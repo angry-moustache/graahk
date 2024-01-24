@@ -8,6 +8,10 @@
       class="w-full rounded-xl"
     >
 
+    <div class="absolute opacity-50">
+      <span v-text="player.uuid" />
+    </div>
+
     <h2
       class="w-full text-center font-bold text-6xl"
       v-text="player.power"

@@ -31,4 +31,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Deck::class);
     }
+
+    public function experience()
+    {
+        return $this->belongsToMany(Card::class, 'experience')
+            ->withPivot('experience');
+    }
 }

@@ -1,10 +1,11 @@
 <template>
   <div
     class="absolute pointer-events-none aspect-[2.5/3.5] w-1/6"
+    style="z-index: 1000"
     v-if="card"
     v-bind:class="{
-      // 'top-4 left-4': ! mouseLeftSideScreen,
-      // 'top-4 right-4': mouseLeftSideScreen,
+      'top-4 left-4': ! mouseLeftSideScreen,
+      'top-4 right-4': mouseLeftSideScreen,
       'top-4 right-4': true,
     }"
   >

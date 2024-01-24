@@ -67,7 +67,15 @@ class CardResource extends Resource
 
                 Select::make('sets')
                     ->relationship('sets', 'name')
-                    ->multiple(),
+                    ->multiple()
+                    ->preload(),
+
+                TextInput::make('enter_speed')
+                    ->type('number')
+                    ->default(500)
+                    ->label('Enter speed')
+                    ->helperText('The speed at which the card enters the screen, in milliseconds.')
+                    ->required(),
             ]),
 
             Section::make('Effects')->schema([

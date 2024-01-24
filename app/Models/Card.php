@@ -11,7 +11,6 @@ use App\Enums\Trigger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use stdClass;
 
 class Card extends Model
 {
@@ -25,6 +24,7 @@ class Card extends Model
         'effects',
         'keywords',
         'masked_text',
+        'enter_speed',
     ];
 
     protected $casts = [
@@ -32,6 +32,7 @@ class Card extends Model
         'tribes' => 'array',
         'effects' => 'array',
         'keywords' => 'array',
+        'enter_speed' => 'integer',
     ];
 
     public function attachment()
@@ -42,6 +43,12 @@ class Card extends Model
     public function sets()
     {
         return $this->belongsToMany(Set::class);
+    }
+
+    public function experience()
+    {
+        return $this->belongsToMany(User::class, 'experience')
+            ->withPivot('experience');
     }
 
     public function scopeDudes($query)
@@ -59,7 +66,7 @@ class Card extends Model
     public function toText(): string
     {
         $keywords = Collection::wrap($this->keywords)->map(function (string $keyword) {
-            return '<strong>' . Keyword::from($keyword)->toText() . '</strong>';
+            return '<strong>' . Keyword::from($keyword)->toText() . '.</strong>';
         });
 
         if ($this->masked_text) {
@@ -73,20 +80,27 @@ class Card extends Model
         for ($i = 0; $i < $effects->count(); $i++) {
             $trigger = null;
             $effect = $effects[$i];
+
             if ($effect['trigger'] === ($effects[$i - 1]['trigger'] ?? false)) {
-                $trigger = ', then ';
+                $trigger = ', then';
             }
 
-            $text .= implode(' ', [
+            $text .= trim(implode(' ', [
                 $trigger ?? Trigger::tryFrom($effect['trigger'])?->toText(),
                 Effect::tryFrom($effect['effect'])?->toText($effect),
-            ]) . '. ';
+            ]));
+
+            if ($effect['trigger'] !== ($effects[$i + 1]['trigger'] ?? false)) {
+                $text .= '. ';
+            }
         }
 
-        return collect([strlen($text) > 0 ? $text . '.' : ''])
-            ->prepend($keywords)
-            ->flatten()
-            ->join('. ');
+        return trim(
+            collect([$text])
+                ->prepend($keywords)
+                ->flatten()
+                ->join(' ')
+        );
     }
 
     public function toJavaScript(): array
@@ -100,13 +114,24 @@ class Card extends Model
             'originalCost' => $this->cost,
             'power' => $this->power,
             'originalPower' => $this->power,
-            'tribes' => $this->getTribes()->join(', '),
+            'tribes' => $this->tribes,
+            'tribesText' => $this->getTribes()->join(', '),
             'text' => $this->toText(),
             'keywords' => $this->keywords,
             'effects' => $this->effects,
             'type' => $this->type,
             'ready' => Collection::wrap($this->keywords)->contains(Keyword::RUSH->value),
+            'enterSpeed' => $this->enter_speed,
+            'level' => $this->getLevel(),
         ];
+    }
+
+    public function getLevel(): int
+    {
+        return $this->experience
+            ->where('id', auth()->id())
+            ->first()
+            ?->pivot->experience ?? 1;
     }
 
     public static function booted()

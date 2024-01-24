@@ -62,7 +62,7 @@ window.resizeCards = function () {
   }
 
   for (let i = 0; i < cardNames.length; i++) {
-    window.fitText(cardNames[i], 1.3)
+    window.fitText(cardNames[i], 1.4)
   }
 
   for (let i = 0; i < cardPowers.length; i++) {

@@ -20,14 +20,22 @@ export class AttackAnimation extends Animation {
 
     this.addClass(attacker, 'animate-attacking')
 
-    await timeout(100).then(async () => { /* Dude getting up to attack */
-      // Move the attacker on top of the defender
+    await timeout(100 /* Dude getting up to attack */).then(async () => {
       // Make sure we end up in the middle of the card, even if we attack from above
       const offsetLeftCenter = (defender.offsetWidth - attacker.offsetWidth) / 2
-      attacker.style.translate = `
-        ${defender.offsetLeft - attacker.offsetLeft + offsetLeftCenter}px
-        ${defender.offsetTop - attacker.offsetTop + defender.offsetHeight / 2}px
-      `
+
+      // Move the attacker on top of the defender
+      if (attacker.offsetTop > defender.offsetTop) {
+        attacker.style.translate = `
+          ${defender.offsetLeft - attacker.offsetLeft + offsetLeftCenter}px
+          ${defender.offsetTop - attacker.offsetTop + defender.offsetHeight / 2}px
+        `
+      } else {
+        attacker.style.translate = `
+          ${defender.offsetLeft - attacker.offsetLeft + offsetLeftCenter}px
+          ${defender.offsetTop - attacker.offsetTop - attacker.offsetHeight / 2}px
+        `
+      }
 
       // Return to its position
       await timeout(this.duration).then(() => { /* Dude Returning */

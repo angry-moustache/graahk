@@ -17,6 +17,12 @@ Route::middleware([Authenticate::class])->group(function () {
     Route::get('/', Livewire\Dashboard::class)
         ->name('dashboard.index');
 
+    Route::get('profiles', Livewire\Profiles\Index::class)
+        ->name('profile.index');
+
+    Route::get('profile/edit', Livewire\Profiles\Edit::class)
+        ->name('profile.edit');
+
     Route::get('decks', Livewire\Decks\Index::class)
         ->name('deck.index');
 

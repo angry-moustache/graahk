@@ -1,0 +1,35 @@
+.animate-cthulhulhulhu {
+    animation: cthulhulhulhu 4s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    z-index: 1000;
+}
+
+// Glow
+@keyframes cthulhulhulhu {
+    0% {
+        opacity: 0;
+    }
+    24% {
+        transform: scale(1, 1);
+    }
+    25% {
+        opacity: 0;
+        transform: scale(0, 0);
+    }
+    30% {
+        opacity: 1;
+        transform: scale(2, 3);
+    }
+    35% {
+        transform: scale(2, 3);
+    }
+    40% {
+        transform: scale(1, 1);
+        box-shadow: 0 0 0 0 rgb(255, 28, 28);
+    }
+    100% {
+        box-shadow: 0 0 500px 300px rgba(255, 244, 28, 0);
+    }
+}

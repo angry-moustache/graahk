@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-use App\Entities\Game\Animation;
+use App\Enums\Traits\HasList;
 use App\Models\Card;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 
 enum Effect: string implements HasLabel
 {
+    use HasList;
+
     case DRAW_CARDS = 'draw_cards';
     case DEAL_DAMAGE = 'deal_damage';
     case SPAWN_TOKEN = 'spawn_token';
@@ -27,8 +29,7 @@ enum Effect: string implements HasLabel
     case DRAW_SPECIFIC_DUDE = 'draw_specific_dude';
     case BOUNCE = 'bounce';
     case SILENCE = 'silence';
-    case SHUFFLE_DECK = 'shuffle_deck';
-    case READY_DUDE = 'ready_dude';
+    case READY_DUDE = 'ready_dudes';
 
     // Dude specific effects
     case UNNAMED_ONE = 'unnamed_one';
@@ -52,7 +53,6 @@ enum Effect: string implements HasLabel
             self::DRAW_SPECIFIC_DUDE => 'Draw specific card (dude)',
             self::BOUNCE => 'Bounce',
             self::SILENCE => 'Silence',
-            self::SHUFFLE_DECK => 'Shuffle deck',
             self::READY_DUDE => 'Ready dude',
 
             self::UNNAMED_ONE => 'Unnamed one effect',
@@ -62,7 +62,6 @@ enum Effect: string implements HasLabel
     public function schema(): array
     {
         return match ($this) {
-            self::UNNAMED_ONE => [],
             self::SPAWN_TOKEN => [
                 TextInput::make('amount')->required(),
                 Select::make('target')->options(Target::class)->required(),
@@ -83,6 +82,7 @@ enum Effect: string implements HasLabel
             self::STUN,
             self::BOUNCE,
             self::SILENCE,
+            self::UNNAMED_ONE,
             self::READY_DUDE => [
                 Select::make('target')->options(Target::class)->required(),
             ],
@@ -106,9 +106,6 @@ enum Effect: string implements HasLabel
                 Select::make('dude')
                     ->options(fn () => Card::where('type', CardType::DUDE)->orderBy('name')->pluck('name', 'id'))
                     ->required(),
-            ],
-            self::SHUFFLE_DECK => [
-                Select::make('target')->options(Target::class)->required(),
             ],
             default => [
                 TextInput::make('amount')->required(),
@@ -148,8 +145,9 @@ enum Effect: string implements HasLabel
                 "gain {$parameters['amount']} power",
             ],
             self::HEAL => [
+                'heal',
                 Target::from($parameters['target'])->toText(),
-                "heals for {$parameters['amount']}",
+                "for {$parameters['amount']}",
             ],
             self::GAIN_ENERGY => [
                 Target::from($parameters['target'])->toText(),
@@ -209,10 +207,6 @@ enum Effect: string implements HasLabel
                 Target::from($parameters['target'])->toText(),
                 'to its owner\'s hand',
             ],
-            self::SHUFFLE_DECK => [
-                Target::from($parameters['target'])->toText(),
-                'shuffle your deck',
-            ],
             self::READY_DUDE => [
                 'ready',
                 Target::from($parameters['target'])->toText(),
@@ -220,14 +214,5 @@ enum Effect: string implements HasLabel
         })
             ->filter()
             ->join(' ');
-    }
-
-    public function animation(): null | Animation
-    {
-        return match ($this) {
-            self::GAIN_ENERGY => new Animation('gain-energy'),
-            self::DRAW_CARDS => new Animation('draw-card'),
-            default => null,
-        };
     }
 }

@@ -33,8 +33,8 @@
         <ul>
             @foreach ($games as $game)
                 <li>
-                    {{ $game->name }}
-                    <a wire:click="joinGame('{{ $game->id }}')">Join</a>
+                    {{ $game->name }}<br>
+                    <a wire:click="joinGame('{{ $game->id }}')">Join</a><br>
                     <a href="{{ $game->route() }}">Play</a>
                 </li>
             @endforeach

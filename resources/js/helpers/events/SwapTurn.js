@@ -1,3 +1,5 @@
+import { TurnStartAnimation } from "../entities/animations/TurnStartAnimation"
+
 export class SwapTurn {
   resolve (game) {
     game._vue.queue([
@@ -6,9 +8,15 @@ export class SwapTurn {
         window.nextJob()
       }),
       (() => {
-        console.log('Swapping turn');
         [game.currentPlayer, game.currentOpponent] = [game.currentOpponent, game.currentPlayer]
-        window.nextJob()
+
+        // If you are the new active player
+        console.log(game.currentPlayer.id, game.player.id)
+        if (game.currentPlayer.id === game.player.id) {
+          new TurnStartAnimation(game).resolve(() => window.nextJob())
+        } else {
+          window.nextJob()
+        }
       }),
       (() => {
         game.checkTriggers('start_turn', game.currentPlayer.board)

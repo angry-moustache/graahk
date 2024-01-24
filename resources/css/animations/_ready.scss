@@ -1,0 +1,16 @@
+.animate-ready {
+    animation: ready .4s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+// Glow
+@keyframes ready {
+    0% {
+        box-shadow: 0 0 0 0 rgb(19, 180, 22);
+    }
+    100% {
+        box-shadow: 0 0 0 20px rgba(255, 244, 28, 0);
+    }
+}

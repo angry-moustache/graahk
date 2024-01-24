@@ -1,0 +1,21 @@
+.visual-effect-ghostly {
+    animation-name: phantom;
+    animation-duration: 3s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+}
+
+@keyframes phantom {
+    0% {
+        opacity: 0.5;
+        transform: scale(1, 1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05, 1);
+    }
+    100% {
+        opacity: 0.5;
+        transform: scale(1, 1);
+    }
+}

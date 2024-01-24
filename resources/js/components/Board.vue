@@ -1,15 +1,9 @@
 <template>
   <div
-    class="flex flex-col h-[40vh] w-full justify-center"
+    class="flex flex-col h-[40vh] w-full justify-center transition-all duration-500"
     v-bind:class="{ 'bg-surface': ! active, 'bg-background': active }"
   >
-    <transition-group
-      class="flex flex-wrap h-[30vh] w-full gap-4 items-center justify-evenly"
-      name="dude"
-      tag="div"
-    >
-      <slot></slot>
-    </transition-group>
+    <slot></slot>
   </div>
 </template>
 

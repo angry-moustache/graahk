@@ -1,7 +1,7 @@
 <template>
   <div
     :id="'dude-' + dude.uuid"
-    class="relative flex justify-center origin-center"
+    class="relative flex justify-center origin-center transition-all duration-500"
   >
     <div
       v-bind:style="{ backgroundImage: `url('${dude.image}')` }"
@@ -15,7 +15,27 @@
         '!border-green-500': dude.highlighted,
       }"
     ></div>
-      <span class="absolute opacity-50" v-text="dude.uuid" />
+      <div class="absolute opacity-50">
+        <span v-text="dude.uuid" />
+      </div>
+
+      <div class="absolute -inset-[2rem] pointer-events-none">
+        <img
+          v-for="(debuff, key) in dude.debuffs"
+          v-bind:key="key"
+          v-bind:src="`/images/visual-effects/${debuff.visual}.png`"
+          class="absolute inset-0 w-full"
+          v-bind:class="`visual-effect-${debuff.visual}`"
+        />
+
+        <img
+          v-for="(keyword, key) in dude.keywords.filter((effect) => effect !== 'rush')"
+          v-bind:key="key"
+          v-bind:src="`/images/visual-effects/${keyword}.png`"
+          class="absolute inset-0 w-full"
+          v-bind:class="`visual-effect-${keyword}`"
+        />
+      </div>
 
       <div
         class="

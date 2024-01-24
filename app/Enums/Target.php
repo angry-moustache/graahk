@@ -2,10 +2,13 @@
 
 namespace App\Enums;
 
+use App\Enums\Traits\HasList;
 use Filament\Support\Contracts\HasLabel;
 
 enum Target: string implements HasLabel
 {
+    use HasList;
+
     // Players
     case PLAYER = 'player';
     case OPPONENT = 'opponent';
@@ -33,9 +36,9 @@ enum Target: string implements HasLabel
         return match ($this) {
             self::PLAYER => 'Player',
             self::OPPONENT => 'Opponent',
-            self::DUDE => 'Dude',
-            self::DUDE_PLAYER => 'Dude (player)',
-            self::DUDE_OPPONENT => 'Dude (opponent)',
+            self::DUDE => 'Target dude',
+            self::DUDE_PLAYER => 'Target dude (player)',
+            self::DUDE_OPPONENT => 'Target dude (opponent)',
             self::ALL_PLAYERS => 'All players',
             self::ALL_PLAYER_DUDES => 'All player dudes',
             self::ALL_OTHER_PLAYER_DUDES => 'All player dudes except itself',

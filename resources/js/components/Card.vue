@@ -12,7 +12,7 @@
       }"
       v-on:click="canPlay && $emit('play-card', cardKey)"
   >
-      <img src="/images/cards/dude-1.svg" />
+      <img v-bind:src="`/images/cards/dude-${card.level}.svg`" />
 
       <h2
         class="absolute top-[4%] left-[4%] text-center w-[14.5%] font-bold"
@@ -25,18 +25,27 @@
       ></h3>
 
       <span
-        class="absolute bottom-[36.5%] left-[8%] w-[80%] text-lg"
-        v-text="card.tribes"
+        class="absolute bottom-[36.5%] left-[8%] w-[80%]"
+        v-text="card.tribesText"
+        v-bind:class="{
+          'bottom-[5.5%] left-[36.5%]': card.level > 2
+        }"
       ></span>
 
       <p
         class="absolute top-[65%] bottom-[14%] left-[9%] w-[82%] overflow-y-auto"
         v-html="card.text"
+        v-bind:class="{
+          'text-white text-border-hard': card.level > 2,
+        }"
       ></p>
 
       <h4
+        v-text="power"
         class="absolute bottom-[2.6%] left-[4%] w-[29%] text-center font-bold"
-        v-text="card.power"
+        v-bind:class="{
+          'text-green-500 text-border-hard': updatedPower,
+        }"
       ></h4>
   </div>
 </template>
@@ -53,8 +62,26 @@ export default {
       default: false,
     },
   },
+  data () {
+    return {
+      updatedPower: false,
+    }
+  },
   mounted () {
+    this.card.level ??= 1
     window.resizeCards()
+  },
+  computed: {
+    power () {
+      const effects = this.card.effects.map((e) => e.effect)
+
+      if (effects.includes('unnamed_one')) {
+        this.card.power = parseInt(window.game.player.graveyard.length * 50)
+        this.updatedPower = true
+      }
+
+      return this.card.power
+    },
   },
 }
 </script>

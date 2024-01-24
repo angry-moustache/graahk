@@ -3,6 +3,10 @@ import Pusher from 'pusher-js';
 import Play from './components/Play.vue';
 import { createApp } from 'vue';
 import axios from 'axios';
+import { v5 as uuid } from 'uuid';
+
+// Generates an UUID v5 based on a base UUID and a namespace
+window.uuid = ((base) => uuid(`${base}`, '7b38091b-5e98-42f0-ad73-ac981fc83211'))
 
 window.axios = axios
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
@@ -15,5 +19,11 @@ window.pusher = new Pusher(
 window.timeout = (delay) => {
   return new Promise((resolve) => setTimeout(resolve, delay))
 }
+
+window.requiresTarget = [
+  'dude',
+  'dude_player',
+  'dude_opponent',
+]
 
 createApp({}).component('Play', Play).mount('#app')

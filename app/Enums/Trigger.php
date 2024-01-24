@@ -2,10 +2,13 @@
 
 namespace App\Enums;
 
+use App\Enums\Traits\HasList;
 use Filament\Support\Contracts\HasLabel;
 
 enum Trigger: string implements HasLabel
 {
+    use HasList;
+
     case ENTER_FIELD = 'enter_field';
     case LEAVE_FIELD = 'leave_field';
 
@@ -20,8 +23,13 @@ enum Trigger: string implements HasLabel
 
     case ATTACK = 'attack';
     case AFTER_ATTACK = 'after_attack';
+    case SURVIVE_DAMAGE = 'survive_damage';
+    case TOOK_DAMAGE = 'took_damage';
+    case KILLING_BLOW = 'killing_blow';
 
-    case PLAYER_DUDE_DIES = 'dude_dies';
+    case DUDE_DIES = 'dude_dies';
+    case PLAYER_DUDE_DIES = 'player_dude_dies';
+    case OPPONENT_DUDE_DIES = 'opponent_dude_dies';
 
     case DRAW_CARD = 'draw_card';
 
@@ -37,8 +45,13 @@ enum Trigger: string implements HasLabel
             self::PLAYER_PLAY_DUDE => 'You play dude',
             self::OPPONENT_PLAY_DUDE => 'Opponent plays dude',
             self::AFTER_ATTACK => 'After attacking',
+            self::SURVIVE_DAMAGE => 'Survives damage',
+            self::TOOK_DAMAGE => 'Took damage',
             self::ATTACK => 'Attacks',
+            self::KILLING_BLOW => 'After a killing blow',
+            self::DUDE_DIES => 'Dude dies',
             self::PLAYER_DUDE_DIES => 'Dude you control dies',
+            self::OPPONENT_DUDE_DIES => 'Dude your opponent controls dies',
             self::DRAW_CARD => 'After drawing a card',
         };
     }
@@ -55,8 +68,13 @@ enum Trigger: string implements HasLabel
             self::PLAYER_PLAY_DUDE => 'When you play a dude,',
             self::OPPONENT_PLAY_DUDE => 'When your opponent plays a dude,',
             self::AFTER_ATTACK => 'After this dude attacks,',
+            self::SURVIVE_DAMAGE => 'When this dude survives damage,',
+            self::TOOK_DAMAGE => 'When this dude takes damage,',
             self::ATTACK => 'When this dude attacks,',
+            self::KILLING_BLOW => 'When this dude kills another dude,',
+            self::DUDE_DIES => 'When a dude dies,',
             self::PLAYER_DUDE_DIES => 'When a dude you control dies,',
+            self::OPPONENT_DUDE_DIES => 'When a dude your opponent controls dies,',
             self::DRAW_CARD => 'After you draw a card,',
         };
     }

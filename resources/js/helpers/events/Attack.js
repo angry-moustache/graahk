@@ -1,3 +1,4 @@
+import { Player } from "../entities/Player"
 import { AttackAnimation } from "../entities/animations/AttackAnimation"
 
 export class Attack {
@@ -17,8 +18,12 @@ export class Attack {
 
         new AttackAnimation({ attacker: attacker, defender: defender }).resolve(async (animation) => {
           defender.deal_damage({ amount: a })
-          if (defender.constructor.name !== 'Player') {
+          if (! (defender instanceof Player)) {
             attacker.deal_damage({ amount: d })
+          }
+
+          if (defender.dead) {
+            game.checkTriggers('killing_blow', [attacker])
           }
 
           await timeout(animation.grace + 100).then(() => {

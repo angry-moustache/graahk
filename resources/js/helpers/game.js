@@ -17,13 +17,15 @@ export class Game {
     this.currentPlayer = (_vue.gameState.current_player === this.player.id ? this.player : this.opponent)
     this.currentOpponent = (_vue.gameState.current_player === this.player.id ? this.opponent : this.player)
 
+    // Triggers
     this.pusher.bind('event', (data) => {
-      // Triggers
       switch (data.event) {
         case 'end_turn': (new SwapTurn).resolve(this, data); break
         case 'play_dude': (new PlayDude).resolve(this, data); break
+        // case 'spawn_dude': (new PlayDude).resolve(this, data); break
+        // case 'spawn_token': (new PlayDude).resolve(this, data); break
         case 'attack': (new Attack).resolve(this, data); break
-        default: console.error(`No trigger for ${data.event}`); break
+        default: window.errorToast(`No trigger for ${data.event}`); break
       }
     })
   }
@@ -33,35 +35,54 @@ export class Game {
     window.axios.post(`/api/games/${this.gameId}/event`, { event: event, data: data })
   }
 
-  getTargets (type, owner) {
+  getTargets (type, owner, target = null) {
+    let player, opponent
+    if (owner) {
+      player = (owner.owner === this.currentPlayer.id ? this.currentPlayer : this.currentOpponent)
+      opponent = (owner.owner === this.currentPlayer.id ? this.currentOpponent : this.currentPlayer)
+    } else {
+      [player, opponent] = [this.currentPlayer, this.currentOpponent]
+    }
+
+    type = type || 'player'
+
     switch (type) {
-      case 'player': return [this.currentPlayer]; break
-      case 'opponent': return [this.currentOpponent]; break
-      case 'dude': return []; break // TODO
-      case 'dude_player': return []; break // TODO
-      case 'dude_opponent': return []; break // TODO
-      case 'all_players': return [this.currentPlayer, this.currentOpponent]; break
-      case 'all_player_dudes': return this.currentPlayer.board; break
-      case 'all_other_player_dudes': return this.currentPlayer.board.filter((c) => c.uuid !== owner.uuid); break
-      case 'all_opponent_dudes': return this.currentOpponent.board; break
-      case 'all_dudes': return [...this.currentPlayer.board, ...this.currentOpponent.board]; break
-      case 'all_other_dudes': return [...this.currentPlayer.board, ...this.currentOpponent.board].filter((c) => c.uuid !== owner.uuid); break
-      case 'everything': return [...this.currentPlayer.board, ...this.currentOpponent.board, this.currentPlayer, this.currentOpponent]; break
+      case 'player': return [player]; break
+      case 'opponent': return [opponent]; break
+      case 'dude': return [this._vue.getTarget()]; break
+      case 'dude_player': return [this._vue.getTarget()]; break
+      case 'dude_opponent': return [this._vue.getTarget()]; break
+      case 'all_players': return [player, opponent]; break
+      case 'all_player_dudes': return player.board; break
+      case 'all_other_player_dudes': return player.board.filter((c) => c.uuid !== owner.uuid); break
+      case 'all_opponent_dudes': return opponent.board; break
+      case 'all_dudes': return [...player.board, ...opponent.board]; break
+      case 'all_other_dudes': return [...player.board, ...opponent.board].filter((c) => c.uuid !== owner.uuid); break
+      case 'everything': return [...player.board, ...opponent.board, player, opponent]; break
       case 'itself': return [owner]; break
-      default: console.error(`No target type ${type}`); break
+      case 'from_uuid': return [...player.board, ...opponent.board, player, opponent].filter((c) => c.uuid === target); break
+      default: window.errorToast(`No target type ${type}`); break
     }
   }
 
   // Check for any triggers after an effect or event has fired
-  async checkTriggers (trigger, targets = false) {
+  async checkTriggers (trigger, checks = false, targetedTargets = false) {
     console.log(`TRIGGER: ${trigger}`);
 
     window.game._vue.queue(() => {
       console.log(`STARTED TRIGGERING: ${trigger}`);
 
-      (targets || this.getTargets('all_dudes')).forEach((dude) => {
-        dude.effects.filter((e) => e.trigger === trigger).forEach((effect) => {
-          this.effect(effect.effect, effect, this.getTargets(effect.target, dude))
+      let targets
+      (checks || this.getTargets('all_dudes')).forEach((dude) => {
+        dude.effects.filter((e) => e.trigger === trigger).reverse().forEach((effect) => {
+          // Only use targeted targets if it uses them
+          targets = null
+          if (window.requiresTarget.includes(effect.target)) {
+            targets = targetedTargets
+          }
+
+          // This only pushes to the queue, it doesn't actually run the effect yet
+          this.effect(effect.effect, effect, targets || this.getTargets(effect.target, dude), dude)
         })
       })
 
@@ -72,22 +93,24 @@ export class Game {
   }
 
   // Do something
-  effect (effect, data, targets) {
+  effect (effect, data, targets, source = null) {
+    // Make sure to include the .nextJob() in the event itself
     window.game._vue.queue(() => {
       console.log(`STARTED EFFECT: ${effect}`);
-
       targets.forEach(async (target) => {
         if (target[effect] === undefined) {
-          return console.error(`No effect ${effect} on ${target.uuid}`)
+          return window.errorToast(`No effect ${effect} on ${target.uuid}`)
         }
 
         console.log(`EFFECT: ${effect}`)
-        target[effect](data)
+        await target[effect](data, source)
       })
 
-      console.log(`ENDED EFFECT: ${effect}`);
+      if (targets.length === 0) {
+        window.nextJob()
+      }
 
-      window.nextJob()
+      console.log(`ENDED EFFECT: ${effect}`);
     })
   }
 
@@ -95,21 +118,24 @@ export class Game {
   cleanup () {
     this.player.cleanup(this)
     this.opponent.cleanup(this)
+
+    this._vue.$refs.targeting.stopTargeting()
   }
 
   // Play a card from your hand
-  playCard (key) {
+  playCard (key, data = {}) {
     if (! this.areCurrentPlayer ()) return
 
     let card = this.player.hand[key]
     if (card.cost > this.player.energy) return
 
-    this.event('play_dude', { card: card })
+    data.card = card
+    this.event('play_dude', data)
   }
 
   // Send data to the server to update the game state
   updateGameState () {
-    if (! this.areCurrentPlayer()) return
+    // if (! this.areCurrentPlayer()) return
 
     window.setTimeout(() => {
       let gameState = {}

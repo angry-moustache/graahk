@@ -23,10 +23,4 @@ export class Animation {
       this.duration + this.grace + 100
     )
   }
-
-  // Let the queue know we're done
-  finish () {
-    // window.game._vue.currentJob.finish()
-    console.error('Animation finished called')
-  }
 }

@@ -2,15 +2,18 @@
 
 namespace App\Enums;
 
+use App\Enums\Traits\HasList;
 use Filament\Support\Contracts\HasLabel;
 
 enum Keyword: string implements HasLabel
 {
+    use HasList;
+
     case PROTECT = 'protect';
     case RUSH = 'rush';
     case GHOSTLY = 'ghostly';
     case SCENERY = 'scenery';
-    case DRAINED = 'drained';
+    case TIRELESS = 'tireless';
 
     public function getLabel(): ?string
     {
@@ -19,7 +22,7 @@ enum Keyword: string implements HasLabel
             self::RUSH => 'Rush',
             self::GHOSTLY => 'Ghostly',
             self::SCENERY => 'Scenery',
-            self::DRAINED => 'Drained',
+            self::TIRELESS => 'Tireless',
         };
     }
 
@@ -30,7 +33,7 @@ enum Keyword: string implements HasLabel
             self::RUSH => 'Rush',
             self::GHOSTLY => 'Ghostly',
             self::SCENERY => 'Scenery',
-            self::DRAINED => 'Drained',
+            self::TIRELESS => 'Tireless',
         };
     }
 }
