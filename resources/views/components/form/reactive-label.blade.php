@@ -34,8 +34,4 @@
     @endif
 
     {{ $slot }}
-
-    @error("fields.{$name}")
-        <span class="inline-block pl-2 pt-2 text-red-500">{{ $message }}</span>
-    @enderror
 </div>

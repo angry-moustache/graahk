@@ -1,5 +1,6 @@
 import { SwapTurn } from './events/SwapTurn'
 import { PlayDude } from './events/PlayDude'
+import { Mulliganed } from './events/Mulliganed'
 
 import { Player } from './entities/Player'
 import { reactive } from 'vue'
@@ -10,6 +11,7 @@ export class Game {
     this._vue = _vue
     this.gameId = _vue.gameId
     this.pusher = window.pusher.subscribe(this.gameId)
+    this.completed = _vue.gameState.completed || false
 
     this.player = reactive(new Player(_vue.gameState.player))
     this.opponent = reactive(new Player(_vue.gameState.opponent))
@@ -20,14 +22,17 @@ export class Game {
     // Triggers
     this.pusher.bind('event', (data) => {
       switch (data.event) {
+        case 'mulliganed': (new Mulliganed).resolve(this, data); break
         case 'end_turn': (new SwapTurn).resolve(this, data); break
         case 'play_dude': (new PlayDude).resolve(this, data); break
-        // case 'spawn_dude': (new PlayDude).resolve(this, data); break
-        // case 'spawn_token': (new PlayDude).resolve(this, data); break
         case 'attack': (new Attack).resolve(this, data); break
         default: window.errorToast(`No trigger for ${data.event}`); break
       }
     })
+  }
+
+  haveMulliganed () {
+    return (this.player.mulliganed !== -1 && this.opponent.mulliganed !== -1)
   }
 
   // Post an event to the server
@@ -114,12 +119,41 @@ export class Game {
     })
   }
 
-
   cleanup () {
-    this.player.cleanup(this)
-    this.opponent.cleanup(this)
+    this.player.causalityList().forEach((death) => {
+      if (death.type === 'dude') {
+        this.checkTriggers('dude_dies', [...this.player.board, ...this.opponent.board])
+        this.checkTriggers('player_dude_dies', this.player.board)
+        this.checkTriggers('opponent_dude_dies', this.opponent.board)
+      }
+
+      this.checkTriggers('leave_field', [death])
+    })
+
+    this.opponent.causalityList().forEach((death) => {
+      if (death.type === 'dude') {
+        this.checkTriggers('dude_dies', [...this.player.board, ...this.opponent.board])
+        this.checkTriggers('player_dude_dies', this.opponent.board)
+        this.checkTriggers('opponent_dude_dies', this.player.board)
+      }
+
+      this.checkTriggers('leave_field', [death])
+    })
 
     this._vue.$refs.targeting.stopTargeting()
+
+    this.checkGameOver()
+    this.updateGameState()
+  }
+
+  checkGameOver () {
+    if (this.player.power > 0 && this.opponent.power > 0) return
+
+    this._vue.queue(() => {
+      window.game.completed = true
+      window.game._vue.gameCompleted = true
+      console.log('GAME OVER')
+    }, 'end')
   }
 
   // Play a card from your hand
@@ -135,10 +169,11 @@ export class Game {
 
   // Send data to the server to update the game state
   updateGameState () {
-    // if (! this.areCurrentPlayer()) return
+    if (! this.areCurrentPlayer()) return
 
     window.setTimeout(() => {
       let gameState = {}
+      gameState['completed'] = this.completed
       gameState['current_player'] = this.currentPlayer.id
       gameState[`player_${this.player.id}`] = this.player
       gameState[`player_${this.opponent.id}`] = this.opponent

@@ -12,6 +12,8 @@ export class PlayDude {
         card.owner = game.currentPlayer.id
         card.opponent = game.currentOpponent.id
 
+        card.ready = card.keywords.includes('rush')
+
         game.currentPlayer.board.push(card)
         game.currentPlayer.hand = game.currentPlayer.hand.filter((c) => c.uuid !== card.uuid)
         game.currentPlayer.energy -= card.cost

@@ -9,6 +9,9 @@
     </head>
 
     <body class="bg-background text-text">
+        <livewire:modal-controller />
+        <x-toasts />
+
         <x-main>
             {{ $slot }}
         </x-main>

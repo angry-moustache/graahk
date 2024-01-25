@@ -9,7 +9,9 @@ export class ShakeAnimation extends Animation {
   }
 
   async resolve (finallyCallback) {
-    this.addClass(this.data.target.$el(), 'animate-shake')
+    const intensity = Math.min(this.data.intensity || 100, 1000)
+
+    this.addClass(this.data.target.$el(), `animate-shake-${intensity}`)
     super.resolve()
 
     await window.timeout(this.duration)

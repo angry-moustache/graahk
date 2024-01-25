@@ -4,6 +4,7 @@
           graahk-card w-full rounded-xl overflow-hidden
           bg-cover bg-center relative
           text-black select-none aspect-[2.5/3.5]
+          cursor-pointer
       "
       v-bind:style="{ backgroundImage: `url('${card.image}')` }"
       v-bind:class="{
@@ -41,7 +42,7 @@
       ></p>
 
       <h4
-        v-text="power"
+        v-text="updatedPower || power"
         class="absolute bottom-[2.6%] left-[4%] w-[29%] text-center font-bold"
         v-bind:class="{
           'text-green-500 text-border-hard': updatedPower,
@@ -75,9 +76,8 @@ export default {
     power () {
       const effects = this.card.effects.map((e) => e.effect)
 
-      if (effects.includes('unnamed_one')) {
-        this.card.power = parseInt(window.game.player.graveyard.length * 50)
-        this.updatedPower = true
+      if (!this.updatedPower && effects.includes('unnamed_one')) {
+        this.updatedPower = parseInt(window.game.player.graveyard.length * 50)
       }
 
       return this.card.power

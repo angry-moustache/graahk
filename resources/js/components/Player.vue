@@ -3,14 +3,14 @@
     class="flex flex-col gap-4 p-4 origin-center"
     v-bind:class="{ 'flex-col-reverse': reverse }"
   >
-    <img
-      src="/images/logo.jpg"
-      class="w-full rounded-xl"
-    >
+    <div
+        class="avatar w-full pt-[100%] rounded-lg bg-cover bg-center"
+        v-bind:style="`background-image: url('${player.avatar}')`"
+    ></div>
 
-    <div class="absolute opacity-50">
+    <!-- <div class="absolute opacity-50">
       <span v-text="player.uuid" />
-    </div>
+    </div> -->
 
     <h2
       class="w-full text-center font-bold text-6xl"

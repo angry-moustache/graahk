@@ -52,16 +52,22 @@ export class Dude {
   async deal_damage (data, source) {
     this.power -= data.amount
 
+    if (source) {
+      new ActivatedAnimation({ target: source }).resolve()
+    }
+
     if (this.power <= 0) {
       this.dead = ! this.keywords.includes('tireless')
       this.power = 0
-    } else {
+    }
+
+    if (! this.dead) {
       game.checkTriggers('survive_damage', [this])
     }
 
     game.checkTriggers('took_damage', [this])
 
-    await new ShakeAnimation({ target: this }).resolve(() => {
+    await new ShakeAnimation({ target: this, intensity: data.amount }).resolve(() => {
       window.nextJob()
     })
   }
@@ -148,6 +154,7 @@ export class Dude {
     this.reset()
 
     // Turn it into a normal object
+    this.highlighted = false
     player.hand.push(JSON.parse(JSON.stringify(this)))
 
     window.nextJob()

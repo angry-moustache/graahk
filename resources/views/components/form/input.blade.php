@@ -15,7 +15,7 @@
     />
 </x-form.reactive-label>
 
-@error($attributes->get('wire:model'))
+@error($attributes->get('wire:model') ?? $attributes->get('wire:model.live'))
     <div class="text-error">
         {{ $message }}
     </div>

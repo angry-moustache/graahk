@@ -6,12 +6,13 @@
     'name' => strtolower($label),
 ])
 
-<x-form.reactive-label :$name :$label {{ $attributes->only('class') }}>
+<x-form.reactive-label :$name :$label>
     <select
         data-label-target
         x-on:change="setLabelStatus()"
-        class="bg-surface py-3 px-2 text-lg rounded-lg w-full outline-none"
-        {{ $attributes->except('class', 'options') }}
+        {{ $attributes->except('options')->merge([
+            'class' => 'bg-surface py-3 px-2 text-lg rounded-lg w-full outline-none',
+        ]) }}
     >
         @if ($nullable)
             <option value=""></option>

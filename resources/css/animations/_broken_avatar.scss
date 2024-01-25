@@ -1,0 +1,44 @@
+// Split avatar into two parts
+.broken-avatar {
+    &-left {
+        animation: break-left 0.5s;
+        animation-iteration-count: 1;
+        animation-timing-function: linear;
+        animation-fill-mode: forwards;
+        transform-origin: 50% 100%;
+        z-index: 1000;
+    }
+
+    &-right {
+        animation: break-right 0.5s;
+        animation-iteration-count: 1;
+        animation-timing-function: linear;
+        animation-fill-mode: forwards;
+        transform-origin: 50% 100%;
+        z-index: 1000;
+    }
+}
+
+@keyframes break-left {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(2px) rotate(0deg);
+    }
+    100% {
+        transform: translateY(5px) rotate(-5deg);
+    }
+}
+
+@keyframes break-right {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-2px) rotate(0deg);
+    }
+    100% {
+        transform: translateY(5px) rotate(5deg);
+    }
+}

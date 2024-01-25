@@ -104,7 +104,7 @@
             <x-form.button
                 class="w-full"
                 wire:click="saveDeck"
-                text="Save changes"
+                label="Save changes"
             />
         </div>
 
@@ -128,7 +128,7 @@
                 </div>
 
                 <x-headers.h2
-                    text="Advanced filters"
+                    label="Advanced filters"
                     class="p-2 font-normal cursor-pointer"
                     x-on:click="open = ! open"
                 >

@@ -26,4 +26,29 @@ window.requiresTarget = [
   'dude_opponent',
 ]
 
-createApp({}).component('Play', Play).mount('#app')
+document.addEventListener('DOMContentLoaded', () => {
+  window.closeModal = () => {
+    Livewire.dispatch('closeModal')
+  }
+
+  window.openModal = (modal, params) => {
+    Livewire.dispatch('openModal', [modal, params])
+  }
+
+  window.addEventListener('close-modal', () => {
+    window.closeModal()
+  })
+})
+
+Livewire.hook('commit', ({ succeed }) => {
+    succeed(() => {
+      window.setTimeout(() => {
+        if (! document.getElementById('app')) return
+        createApp({}).component('Play', Play).mount('#app')
+      }, 500)
+    })
+})
+
+if (document.getElementById('app')) {
+  createApp({}).component('Play', Play).mount('#app')
+}

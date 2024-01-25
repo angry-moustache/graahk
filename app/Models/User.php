@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use AngryMoustache\Media\Models\Attachment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -14,6 +15,7 @@ class User extends Authenticatable
     protected $fillable = [
         'username',
         'email',
+        'avatar_id',
         'password',
     ];
 
@@ -27,6 +29,11 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public function avatar()
+    {
+        return $this->belongsTo(Attachment::class, 'avatar_id');
+    }
+
     public function decks()
     {
         return $this->hasMany(Deck::class);
@@ -36,5 +43,10 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Card::class, 'experience')
             ->withPivot('experience');
+    }
+
+    public function getAvatarUrlAttribute(): string
+    {
+        return $this->avatar?->path() ?? asset('/images/logo.jpg');
     }
 }

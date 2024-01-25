@@ -1,43 +1,55 @@
 <x-container class="flex flex-col gap-12 py-8">
-    @if ($canCreate)
-        <div class="flex flex-col gap-6">
-            <x-headers.h2 text="Open new table" />
-
-            <div class="flex flex-col w-1/2 gap-4">
-                <x-form.input
-                    wire:model="fields.name"
-                    label="Name"
-                />
-
-                <x-form.select
-                    wire:model="fields.deck_id"
-                    label="Deck"
-                    :options="$decks"
-                    nullable
-                />
-
-                <div class="w-full">
-                    <x-form.button
-                        wire:click="create"
-                        text="Create table"
-                    />
-                </div>
-            </div>
-        </div>
-    @endif
-
     <div wire:poll class="flex flex-col gap-8">
-        <x-headers.h2 text="Available tables" />
+        <x-headers.h2 label="Available tables" />
 
         {{-- Active games --}}
-        <ul>
+        <div class="w-full flex flex-wrap gap-8">
             @foreach ($games as $game)
-                <li>
-                    {{ $game->name }}<br>
-                    <a wire:click="joinGame('{{ $game->id }}')">Join</a><br>
-                    <a href="{{ $game->route() }}">Play</a>
-                </li>
+                <div class="w-2/5 flex gap-2 relative bg-surface p-4 rounded-xl">
+                    <x-avatar :user="$game->user1" />
+                    <x-avatar :user="$game->user2" />
+
+                    @if ($game->user2)
+                        <img
+                            class="absolute top-5 w-14 left-14 z-100"
+                            src="{{ asset('images/swords.png') }}"
+                        />
+                    @endif
+
+                    <div class="flex flex-col justify-center pl-4">
+                        <span class="text-lg font-bold">
+                            {{ $game->name }}
+                        </span>
+
+                        <span class="opacity-50 text-sm">
+                            {{ $game->user1->username }}
+                            vs {{ $game->user2->username ?? '???' }}
+                        </span>
+                    </div>
+
+                    <div class="grow"></div>
+
+                    <div class="flex flex-col justify-center">
+                        @if (! $game->user2 && $game->user1->id !== auth()->id())
+                            <x-form.button
+                                label="Join"
+                                x-on:click="window.openModal('joinGame', {
+                                    gameId: '{{ $game->id }}',
+                                })"
+                            />
+                        @endif
+                    </div>
+                </div>
             @endforeach
-        </ul>
+        </div>
+
+        @if ($canCreate)
+            <div>
+                <x-form.button
+                    label="Create new table"
+                    x-on:click="window.openModal('createGame')"
+                />
+            </div>
+        @endif
     </div>
 </x-container>

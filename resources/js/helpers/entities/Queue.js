@@ -40,11 +40,11 @@ export class Queue {
       this.amount = 0
     }
 
-    console.log(`Jobs left: ${this.queue.length}`)
+    // console.log(`Jobs left: ${this.queue.length}`)
 
     this.isProcessing = true
     window.nextJob = (() => {
-      console.log('--- NEXT JOB --- #', this.amount)
+      // console.log('--- NEXT JOB --- #', this.amount)
       this.amount = Math.max(0, this.amount - 1)
       this.processQueue()
     }) // Used to call the next job in the queue

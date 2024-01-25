@@ -1,5 +1,5 @@
 <x-container class="flex flex-col gap-12 py-12">
-    <x-headers.h2 text="Decks" />
+    <x-headers.h2 label="Decks" />
 
     <div class="grid grid-cols-4 gap-4">
         @foreach ($decks as $deck)
@@ -10,7 +10,7 @@
     <div class="w-full flex">
         <x-form.button
             wire:click="newDeck"
-            text="Create Deck"
+            label="Create Deck"
         />
     </div>
 </x-container>

@@ -15,9 +15,9 @@
         '!border-green-500': dude.highlighted,
       }"
     ></div>
-      <div class="absolute opacity-50">
+      <!-- <div class="absolute opacity-50">
         <span v-text="dude.uuid" />
-      </div>
+      </div> -->
 
       <div class="absolute -inset-[2rem] pointer-events-none">
         <img

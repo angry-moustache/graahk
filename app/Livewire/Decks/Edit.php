@@ -3,6 +3,7 @@
 namespace App\Livewire\Decks;
 
 use App\Enums;
+use App\Livewire\Traits\CanToast;
 use App\Models\Card;
 use App\Models\Deck;
 use App\Models\Set;
@@ -11,6 +12,8 @@ use Livewire\Component;
 
 class Edit extends Component
 {
+    use CanToast;
+
     public Deck $deck;
 
     public Collection $deckList;
@@ -85,5 +88,7 @@ class Edit extends Component
             'main_card_id' => $this->mainCardId,
             'cards' => $this->deckList->pluck('amount', 'card.id'),
         ]);
+
+        $this->toast('Deck has been saved!');
     }
 }

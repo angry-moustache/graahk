@@ -11,7 +11,6 @@ export class SwapTurn {
         [game.currentPlayer, game.currentOpponent] = [game.currentOpponent, game.currentPlayer]
 
         // If you are the new active player
-        console.log(game.currentPlayer.id, game.player.id)
         if (game.currentPlayer.id === game.player.id) {
           new TurnStartAnimation(game).resolve(() => window.nextJob())
         } else {

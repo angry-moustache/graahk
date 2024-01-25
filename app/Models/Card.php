@@ -120,7 +120,7 @@ class Card extends Model
             'keywords' => $this->keywords,
             'effects' => $this->effects,
             'type' => $this->type,
-            'ready' => Collection::wrap($this->keywords)->contains(Keyword::RUSH->value),
+            'ready' => false,
             'enterSpeed' => $this->enter_speed,
             'level' => $this->getLevel(),
         ];

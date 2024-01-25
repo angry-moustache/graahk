@@ -1,5 +1,5 @@
 <x-container>
-    <x-headers.h1 class="py-6" text="Sets" />
+    <x-headers.h1 class="py-6" label="Sets" />
     <div class="grid grid-cols-6 gap-4">
         @foreach ($sets as $set)
             <div
@@ -11,7 +11,7 @@
     </div>
 
     @if ($currentSet)
-        <x-headers.h2 class="py-6" :text="$currentSet->name" />
+        <x-headers.h2 class="py-6" :label="$currentSet->name" />
         <div class="grid grid-cols-6 gap-4">
             @foreach ($currentSet->cards()->dudes()->get() as $card)
                 <x-card :$card />

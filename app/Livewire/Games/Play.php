@@ -11,6 +11,12 @@ class Play extends Component
 
     public function render()
     {
+        if (! $this->game->user2) {
+            return optional(view('livewire.games.play', [
+                'state' => [],
+            ]))->layout('components.layouts.game');
+        }
+
         $playerId = (int) auth()->id();
         $opponentId = (int) $this->game->opponentId($playerId);
 

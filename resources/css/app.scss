@@ -4,6 +4,7 @@
 
 @import 'animations/activated';
 @import 'animations/attacking';
+@import 'animations/broken_avatar';
 @import 'animations/cthulhulhulhu';
 @import 'animations/death';
 @import 'animations/foil';
@@ -14,6 +15,9 @@
 @import 'animations/unnamed_one';
 
 @import 'visual-effects/ghostly';
+
+@import 'modals';
+@import 'toasts';
 
 @font-face {
     font-family: 'Josefin Sans';

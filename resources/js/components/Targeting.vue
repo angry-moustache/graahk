@@ -1,6 +1,6 @@
 <template>
   <div class="w-[10rem]" ref="aimer">
-    <Card v-if="aimer" :card="aimer"  />
+    <!-- <Card v-if="aimer" :card="aimer"  /> -->
 
     <canvas
       id="canvas-targeting"

@@ -9,9 +9,9 @@
     </head>
 
     <body class="bg-background text-text">
-        <div id="app">
-            {{ $slot }}
-        </div>
+        <x-toasts />
+
+        {{ $slot }}
 
         @vite(['resources/js/app.js'])
     </body>

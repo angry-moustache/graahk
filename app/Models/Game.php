@@ -35,7 +35,7 @@ class Game extends Model
 
     public function scopeOngoing($query)
     {
-        return $query->whereNull('finished_at');
+        return $query->where(fn ($q) => $q->whereNull('finished_at'));
     }
 
     public function opponentId(string $playerId): string

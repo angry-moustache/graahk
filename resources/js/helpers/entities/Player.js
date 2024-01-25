@@ -8,6 +8,8 @@ import { ActivatedAnimation } from './animations/ActivatedAnimation'
 export class Player {
   constructor (player) {
     this.id = player.id
+    this.name = player.name
+    this.avatar = player.avatar
     this.uuid = player.uuid
     this.owner = player.id
     this.power = player.power
@@ -17,6 +19,9 @@ export class Player {
     this.deck = reactive(player.deck)
     this.graveyard = reactive(player.graveyard)
     this.board = reactive(player.board.map((card) => reactive(new Dude(card))))
+
+    // -1 means not mulliganed yet, otherwise it's the amount of cards mulliganed
+    this.mulliganed = (player.mulliganed === undefined ? -1 : player.mulliganed)
   }
 
   $ref () {
@@ -24,35 +29,32 @@ export class Player {
   }
 
   $el () {
-    return this.$ref().$el.querySelector('img')
+    return this.$ref().$el.querySelector('.avatar')
   }
 
-  cleanup (game) {
+  causalityList (game) {
     let deaths = this.board
       .filter((card) => card.power <= 0)
       .filter((card) => card.dead)
 
-    if (deaths.length === 0) return
+    if (deaths.length === 0) return []
 
-    console.log('dead', deaths)
     deaths.forEach((card) => {
       card.dead = true
 
       // VueJS handles the animation
       this.graveyard.push(card)
       this.board.splice(this.board.map((c) => c.uuid).indexOf(card.uuid), 1)
-
-      if (card.type === 'dude') {
-        game.checkTriggers('dude_dies', [...game.player.board, ...game.opponent.board])
-        game.checkTriggers('player_dude_dies', game.board)
-        game.checkTriggers('opponent_dude_dies', game.opponent.board)
-      }
     })
 
-    game.checkTriggers('leave_field', deaths)
+    return deaths
   }
 
-  async gain_energy (data) {
+  async gain_energy (data, source) {
+    if (source) {
+      new ActivatedAnimation({ target: source }).resolve()
+    }
+
     await new GainEnergyAnimation({ target: this.$ref().$refs.energy }).resolve(
       () => this.energy += parseInt(data.amount),
       () => {
@@ -136,7 +138,7 @@ export class Player {
       new ActivatedAnimation({ target: source }).resolve()
     }
 
-    await new ShakeAnimation({ target: this }).resolve(() => {
+    await new ShakeAnimation({ target: this, intensity: data.amount }).resolve(() => {
       window.nextJob()
     })
   }
