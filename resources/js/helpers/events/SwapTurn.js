@@ -18,6 +18,13 @@ export class SwapTurn {
         }
       }),
       (() => {
+        game.currentPlayer.board.forEach((dude) => {
+          if (dude.willClearStuns) {
+            dude.debuffs = dude.debuffs.filter((debuff) => debuff.type !== 'stun')
+            dude.willClearStuns = false
+          }
+        })
+
         game.checkTriggers('start_turn', game.currentPlayer.board)
         window.nextJob()
       }),
@@ -26,6 +33,7 @@ export class SwapTurn {
         window.nextJob()
       }),
       (() => {
+        game.currentPlayer.drawsThisTurn = 0
         game.effect('draw_cards', { amount: 1 }, [game.currentPlayer])
         window.nextJob()
       }),

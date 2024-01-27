@@ -42,14 +42,15 @@ export default {
 
       // Only show after half a second
       this.timeout = setTimeout(() => {
-        if (this.memory[card.id]) {
-          this.card = this.memory[card.id]
+        if (this.memory[card.id + '-' + card.level]) {
+          this.card = this.memory[card.id + '-' + card.level]
           return
         }
 
         axios.get(`/api/cards/${card.id}`).then((response) => {
           this.card = response.data
-          this.memory[card.id] = this.card
+          this.card.level = card.level
+          this.memory[card.id + '-' + card.level] = this.card
         })
       }, 500)
     },

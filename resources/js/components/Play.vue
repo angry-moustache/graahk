@@ -234,6 +234,8 @@ export default {
     this.game = window.game = new Game(this)
     this.jobs = window.jobs = reactive(new Queue())
 
+    console.log(this.game)
+
     this.gameCompleted = this.game.completed
 
     this.$nextTick(() => window.resizeCards())

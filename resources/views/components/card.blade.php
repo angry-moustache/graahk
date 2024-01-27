@@ -1,7 +1,7 @@
 @props([
     'card',
     'text' => $card->toText(),
-    'level' => rand(1, 4) ?? $card->getLevel(),
+    'level' => $card->getLevel(),
 ])
 
 <div
@@ -13,9 +13,11 @@
         isolate z-[-2]
     ']) }}
 >
-    <img src="{{ asset('images/cards/dude-' . $level . '.svg')}}" />
+    <div class="absolute inset-0 rounded-xl overflow-hidden">
+        @if ($level >= 4) <div class="z-[-1] rounded-xl overflow-hidden animate-foil"></div> @endif
+    </div>
 
-    @if ($level >= 4) <div class="z-[-1] rounded-xl overflow-hidden animate-foil"></div> @endif
+    <img src="{{ asset('images/cards/dude-' . $level . '.svg')}}" />
 
     <h2 class="absolute top-[4%] left-[4%] text-center w-[14.5%] font-bold">{{ $card->cost }}</h3>
     <h3 class="absolute top-[5%] left-[21%] w-full font-bold">{{ $card->name }}</h3>

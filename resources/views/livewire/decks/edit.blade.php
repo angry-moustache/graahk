@@ -1,6 +1,6 @@
 <x-container class="flex !p-0">
     <div
-        class="w-full flex gap-4"
+        class="w-full h-screen flex gap-4"
         x-data="{
             deckList: @entangle('deckList'),
             mainCardId: @entangle('mainCardId'),
@@ -48,7 +48,7 @@
             />
 
             <div class="
-                w-full flex flex-col gap-2
+                w-full h-screen flex flex-col gap-2
                 p-6 rounded-lg bg-surface overflow-y-auto
             ">
                 <p
@@ -60,12 +60,7 @@
 
                 <div class="flex flex-col gap-2">
                     <template x-for="card in getDeckList()">
-                        <div class="flex gap-2 items-center relative">
-                            {{-- <span
-                                class="block bg-surface rounded-full aspect-square"
-                                x-text="card.amount"
-                            ></span> --}}
-
+                        <div class="flex gap-2 items-center relative cursor-pointer">
                             <div
                                 style="background-image: url('{{ asset('images/frames/nameplate.svg') }}')"
                                 x-on:click="removeCard(card.card.id)"
@@ -109,7 +104,7 @@
         </div>
 
         {{-- Cardpool --}}
-        <div class="flex flex-col gap-8 h-screen w-full p-8" x-data="{
+        <div class="flex flex-col gap-8 h-screen w-full p-8 overflow-y-auto" x-data="{
             open: false,
         }">
             {{-- Filters --}}
@@ -210,7 +205,7 @@
                 </div>
             </div>
 
-            <div>
+            <div class="overflow-y-auto">
                 <div wire:loading.flex class="w-full">
                     <x-loading />
                 </div>

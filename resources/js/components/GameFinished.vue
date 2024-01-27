@@ -1,9 +1,9 @@
 <template>
   <div
-    class="w-full h-screen fixed inset-0 items-center justify-center flex bg-black bg-opacity-75"
+    class="w-full h-screen fixed inset-0 items-center justify-center flex bg-black bg-opacity-75 game-finished"
     style="z-index: 10000000000"
   >
-    <div class="bg-background p-8 w-1/3 rounded-lg flex flex-col gap-2 items-center">
+    <div class="bg-background p-8 w-1/3 rounded-lg flex flex-col gap-2 items-center game-finished-content">
       <div v-if="won" class="w-64 h-64 relative">
         <div
             v-bind:style="`background-image: url('${game.player.avatar}')`"
@@ -26,7 +26,7 @@
         </div>
       </div>
 
-      <h1 v-text="won ? 'Victory!' : 'Defeated..'" class="text-4xl font-bold uppercase mt-8" />
+      <h1 v-text="won ? 'Victory!' : 'Defeat...'" class="text-4xl font-bold uppercase mt-8" />
       <p v-text="won ? 'Truly a glorious battle!' : 'There\'s always next time!'"/>
 
       <a

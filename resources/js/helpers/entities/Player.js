@@ -1,6 +1,6 @@
 import { reactive } from 'vue'
 import { Dude } from './Dude'
-import { GainEnergyAnimation } from './animations/GainEnergyAnimation'
+import { ExplosionAnimation } from './animations/ExplosionAnimation'
 import { ShakeAnimation } from './animations/ShakeAnimation'
 import { HealAnimation } from './animations/HealAnimation'
 import { ActivatedAnimation } from './animations/ActivatedAnimation'
@@ -19,6 +19,8 @@ export class Player {
     this.deck = reactive(player.deck)
     this.graveyard = reactive(player.graveyard)
     this.board = reactive(player.board.map((card) => reactive(new Dude(card))))
+    this.fatigue = player.fatigue || 0
+    this.drawsThisTurn = player.drawsThisTurn || 0
 
     // -1 means not mulliganed yet, otherwise it's the amount of cards mulliganed
     this.mulliganed = (player.mulliganed === undefined ? -1 : player.mulliganed)
@@ -32,22 +34,37 @@ export class Player {
     return this.$ref().$el.querySelector('.avatar')
   }
 
-  causalityList (game) {
-    let deaths = this.board
-      .filter((card) => card.power <= 0)
-      .filter((card) => card.dead)
+  coords () {
+    return {
+      x: this.$el().offsetLeft + (this.$el().offsetWidth / 2),
+      y: this.$el().offsetTop + (this.$el().offsetHeight / 2),
+    }
+  }
 
-    if (deaths.length === 0) return []
+  shuffle () {
+    this.deck = this.deck.sort(() => Math.random() - 0.5)
+  }
+
+  causalityList () {
+    let deaths = this.board
+      .filter((card) => (card.power <= 0 && ! card.keywords.includes('tireless')) || card.dead)
+      .filter((card) => ! card.deathChecked)
 
     deaths.forEach((card) => {
+      card.deathChecked = true
+    })
+
+    return deaths
+  }
+
+  cleanupDead () {
+    this.board.filter((card) => card.deathChecked).forEach((card) => {
       card.dead = true
 
       // VueJS handles the animation
       this.graveyard.push(card)
       this.board.splice(this.board.map((c) => c.uuid).indexOf(card.uuid), 1)
     })
-
-    return deaths
   }
 
   async gain_energy (data, source) {
@@ -55,8 +72,8 @@ export class Player {
       new ActivatedAnimation({ target: source }).resolve()
     }
 
-    await new GainEnergyAnimation({ target: this.$ref().$refs.energy }).resolve(
-      () => this.energy += parseInt(data.amount),
+    await new ExplosionAnimation({ target: this.$ref().$refs.energy }).resolve(
+      () => this.energy += window.game.getAmount(data, source),
       () => {
         window.game.checkTriggers('gain_energy', this.board)
         window.nextJob()
@@ -64,33 +81,58 @@ export class Player {
     )
   }
 
-  async spawn (data, type = 'token') {
+  async spawn (data, source, type = 'token') {
     let card
-    for (let index = 0; index < data.amount; index++) {
+    for (let index = 0; index < window.game.getAmount(data, source); index++) {
       card = await axios.get(`/api/cards/${data[type]}`)
       card.data.owner = this.id
       card.data.uuid = window.uuid(this.uuid + this.board.length + this.graveyard.length)
+
+      if (source) {
+        card.data.level = source.level || 1
+        new ActivatedAnimation({ target: source }).resolve()
+      }
+
       this.board.push(reactive(new Dude(card.data)))
     }
   }
 
-  async spawn_token (data) {
-    await this.spawn(data, 'token')
+  async spawn_token (data, source) {
+    await this.spawn(data, source, 'token')
     window.nextJob()
   }
 
-  async spawn_dude (data) {
-    await this.spawn(data, 'dude')
+  async spawn_dude (data, source) {
+    await this.spawn(data, source, 'dude')
     window.nextJob()
   }
 
-  async draw_cards (data) {
-    for (let index = 0; index < data.amount; index++) {
-      this.hand.push(this.deck.pop())
-      await timeout(100)
+  async draw_cards (data, source) {
+    for (let index = 0; index < window.game.getAmount(data, source); index++) {
+      if (this.deck.length <= 0) {
+        this.fatigue += 100
+        this.power -= this.fatigue
+        window.errorToast(`Deck empty! Taking ${this.fatigue} fatigue damage!`)
+
+        new ShakeAnimation({ target: this }).resolve()
+        new ExplosionAnimation({
+          target: this.$el(),
+          width: 500,
+          image: 'explosion/red',
+        }).resolve()
+
+        await timeout(200)
+      } else {
+        this.hand.push(this.deck.pop())
+        this.drawsThisTurn++
+        await timeout(100)
+
+        game.checkTriggers('draw_card', this.board)
+        if (this.drawsThisTurn > 1) {
+          game.checkTriggers('draw_second_card', this.board)
+        }
+      }
     }
-
-    game.checkTriggers('draw_card', this.board)
 
     window.nextJob()
   }
@@ -132,13 +174,14 @@ export class Player {
   }
 
   async deal_damage (data, source) {
-    this.power -= data.amount
+    const amount = window.game.getAmount(data, source)
+    this.power -= amount
 
     if (source) {
       new ActivatedAnimation({ target: source }).resolve()
     }
 
-    await new ShakeAnimation({ target: this, intensity: data.amount }).resolve(() => {
+    await new ShakeAnimation({ target: this, intensity: amount }).resolve(() => {
       window.nextJob()
     })
   }
@@ -146,7 +189,7 @@ export class Player {
   async heal (data, source) {
     if (this.power < this.originalPower) {
       this.power = Math.min(
-        this.power + parseInt(data.amount),
+        this.power + window.game.getAmount(data, source),
         this.originalPower
       )
     }
@@ -162,7 +205,7 @@ export class Player {
 
   async drawFromSpecificDeck (data, uuids, source) {
     let key
-    for (let index = 0; index < data.amount; index++) {
+    for (let index = 0; index < window.game.getAmount(data, source); index++) {
       key = this.deck.indexOf(this.deck.find((card) => card.uuid === uuids[index]))
       if (key === -1) {
         window.errorToast('No more cards to draw')

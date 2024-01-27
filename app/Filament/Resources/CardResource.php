@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Animation;
 use App\Enums\CardType;
 use App\Enums\Effect;
 use App\Enums\Keyword;
@@ -22,6 +23,7 @@ use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\HtmlString;
@@ -103,9 +105,18 @@ class CardResource extends Resource
                             ->reactive(),
                     ]),
 
-                    Grid::make()->schema(fn (Get $get) =>
-                        Effect::tryFrom($get('effect'))?->schema() ?? []
-                    ),
+                    Grid::make()->schema(fn (Get $get) =>[
+                        ...Effect::tryFrom($get('effect'))?->schema() ?? [],
+
+                        Select::make('animation')
+                            ->options(Animation::class)
+                            ->nullable()
+                            ->reactive(),
+
+                        Grid::make()->schema([
+                            ...Animation::tryFrom($get('animation'))?->schema() ?? [],
+                        ]),
+                    ]),
                 ]),
             ]),
         ]);
@@ -115,6 +126,9 @@ class CardResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('id')
+                    ->sortable(),
+
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
@@ -134,6 +148,11 @@ class CardResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
+            ->filters([
+                SelectFilter::make('sets')
+                    ->relationship('sets', 'name')
+            ])
+            ->defaultSort('id', 'desc')
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

@@ -1,7 +1,5 @@
 import { Dude } from "../entities/Dude"
 import { reactive } from "vue"
-import { CthulhulhulhuAnimation } from "../entities/animations/CthulhulhulhuAnimation"
-import { GainEnergyAnimation } from "../entities/animations/GainEnergyAnimation"
 
 export class PlayDude {
   resolve (game, event) {
@@ -20,14 +18,7 @@ export class PlayDude {
 
         await timeout(card.enterSpeed || 0)
 
-        if (card.name === 'Cthulhulhulhu') {
-          // Cool, but should move it to a separate thingy TODO
-          await new CthulhulhulhuAnimation({ target: card }).resolve(async () => {
-            window.nextJob()
-          })
-        } else {
-          window.nextJob()
-        }
+        window.nextJob()
       }),
       (() => {
         game.checkTriggers('enter_field', [card], game.getTargets('from_uuid', null, event.data.target))

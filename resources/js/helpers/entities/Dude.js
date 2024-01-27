@@ -2,7 +2,6 @@ import { ActivatedAnimation } from "./animations/ActivatedAnimation"
 import { HealAnimation } from "./animations/HealAnimation"
 import { ShakeAnimation } from "./animations/ShakeAnimation"
 import { reactive } from "vue"
-import { UnnamedOneAnimation } from "./animations/UnnamedOneAnimation"
 import { Debuff } from "./Debuff"
 import { ReadyAnimation } from "./animations/ReadyAnimation"
 
@@ -18,6 +17,13 @@ export class Dude {
 
   $el () {
     return document.getElementById('dude-' + this.uuid)
+  }
+
+  coords () {
+    return {
+      x: this.$el().offsetLeft + (this.$el().offsetWidth / 2),
+      y: this.$el().offsetTop + (this.$el().offsetHeight / 2),
+    }
   }
 
   async reset () {
@@ -50,9 +56,10 @@ export class Dude {
   }
 
   async deal_damage (data, source) {
-    this.power -= data.amount
+    const amount = window.game.getAmount(data, source)
+    this.power -= amount
 
-    if (source) {
+    if (source && data.animation !== 'projectile') {
       new ActivatedAnimation({ target: source }).resolve()
     }
 
@@ -67,15 +74,15 @@ export class Dude {
 
     game.checkTriggers('took_damage', [this])
 
-    await new ShakeAnimation({ target: this, intensity: data.amount }).resolve(() => {
+    await new ShakeAnimation({ target: this, intensity: amount }).resolve(() => {
       window.nextJob()
     })
   }
 
-  async heal (data) {
+  async heal (data, source) {
     if (this.power < this.originalPower && ! this.dead) {
       this.power = Math.min(
-        this.power + parseInt(data.amount),
+        this.power + window.game.getAmount(data, source),
         this.originalPower
       )
     }
@@ -110,7 +117,7 @@ export class Dude {
 
   async ready_dudes () {
     this.ready = ! this.debuffs.some((debuff) => debuff.type === 'stun')
-    this.debuffs = this.debuffs.filter((debuff) => debuff.type !== 'stun')
+    this.willClearStuns = this.debuffs.some((debuff) => debuff.type === 'stun')
 
     if (this.ready) {
       await new ReadyAnimation({ target: this }).resolve(null, () => {
@@ -121,26 +128,29 @@ export class Dude {
     }
   }
 
-  async stun () {
+  async stun (data) {
     this.debuffs.push(new Debuff({
       type: 'stun',
-      visual: 'webbed',
+      visual: data.stun_type || 'web',
     }))
+
+    this.ready = false
 
     await new ActivatedAnimation({ target: this }).resolve(null, () => {
       window.nextJob()
     })
   }
 
-  async buff_dude (data) {
+  async buff_dude (data, source) {
     if (! this.dead) {
-      this.power += parseInt(data.amount)
+      this.power += window.game.getAmount(data, source)
 
       await new ActivatedAnimation({ target: this }).resolve(() => {}, () => {
         window.nextJob()
       })
     } else {
       await timeout(1000)
+      window.nextJob()
     }
   }
 
@@ -160,12 +170,33 @@ export class Dude {
     window.nextJob()
   }
 
+  async shuffle_into_deck () {
+    let player = window.game.playerById(this.owner)
+
+    await new ShakeAnimation({ target: this }).resolve(() => {
+      this.reset()
+      player.deck.push(player.board.splice(player.board.map((c) => c.uuid).indexOf(this.uuid), 1)[0])
+      player.shuffle()
+      window.nextJob()
+    })
+  }
+
+  async shuffle_into_opponents_deck () {
+    let player = window.game.playerById(this.owner)
+    let opponent = window.game.playerById(this.opponent)
+
+    await new ShakeAnimation({ target: this }).resolve(() => {
+      this.reset()
+      opponent.deck.push(player.board.splice(player.board.map((c) => c.uuid).indexOf(this.uuid), 1)[0])
+      opponent.shuffle()
+      window.nextJob()
+    })
+  }
+
   async unnamed_one () {
     let player = window.game.playerById(this.owner)
     this.power = parseInt(player.graveyard.length * 50)
 
-    await new UnnamedOneAnimation({ target: this }).resolve(null, () => {
-      window.nextJob()
-    })
+    window.nextJob()
   }
 }

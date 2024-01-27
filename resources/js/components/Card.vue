@@ -1,10 +1,10 @@
 <template>
   <div
       class="
-          graahk-card w-full rounded-xl overflow-hidden
-          bg-cover bg-center relative
-          text-black select-none aspect-[2.5/3.5]
-          cursor-pointer
+        graahk-card w-full rounded-xl overflow-hidden
+        bg-cover bg-center relative
+        text-black select-none aspect-[2.5/3.5]
+        isolate cursor-pointer
       "
       v-bind:style="{ backgroundImage: `url('${card.image}')` }"
       v-bind:class="{
@@ -13,6 +13,10 @@
       }"
       v-on:click="canPlay && $emit('play-card', cardKey)"
   >
+      <div class="absolute inset-0 rounded-xl overflow-hidden">
+        <div v-if="card.level >= 4" class="z-[-1] rounded-xl overflow-hidden animate-foil"></div>
+      </div>
+
       <img v-bind:src="`/images/cards/dude-${card.level}.svg`" />
 
       <h2
@@ -26,18 +30,23 @@
       ></h3>
 
       <span
-        class="absolute bottom-[36.5%] left-[8%] w-[80%]"
         v-text="card.tribesText"
         v-bind:class="{
-          'bottom-[5.5%] left-[36.5%]': card.level > 2
+            'absolute w-[80%] text-lg': true,
+            'bottom-[36.5%] left-[8%]': (card.level <= 2),
+            'bottom-[5.5%] left-[36.5%]': (card.level > 2),
         }"
       ></span>
 
       <p
-        class="absolute top-[65%] bottom-[14%] left-[9%] w-[82%] overflow-y-auto"
+        v-if="card.text !== ''"
         v-html="card.text"
         v-bind:class="{
-          'text-white text-border-hard': card.level > 2,
+          'absolute bottom-[14%] overflow-y-auto': true,
+          'left-[9%] w-[82%] top-[65%]': (card.level <= 2),
+          'left-[4%] w-[92%]': (card.level > 2),
+          'text-white text-border-hard': (card.level > 2),
+          'bg-black p-2 bg-opacity-25 rounded-lg': (card.level >= 3),
         }"
       ></p>
 

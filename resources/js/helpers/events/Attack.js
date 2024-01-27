@@ -18,13 +18,12 @@ export class Attack {
 
         new AttackAnimation({ attacker: attacker, defender: defender }).resolve(async (animation) => {
           defender.deal_damage({ amount: a })
-          if (! (defender instanceof Player)) {
+          if (! (defender instanceof Player) && ! defender.keywords.includes('scenery')) {
             attacker.deal_damage({ amount: d })
           }
 
-          if (defender.dead) {
-            game.checkTriggers('killing_blow', [attacker])
-          }
+          if (defender.dead) game.checkTriggers('killing_blow', [attacker])
+          if (attacker.dead) game.checkTriggers('killing_blow', [defender])
 
           await timeout(animation.grace + 100).then(() => {
             window.nextJob()

@@ -56,6 +56,7 @@ export default {
       // We're starting an attack
       if (target instanceof Dude && target.owner === this.$parent.game.player.id) {
         if (! target.ready) return
+        if (target.keywords.includes('scenery')) return
 
         // Selecting a friendly dude
         target.highlighted = true
@@ -69,9 +70,12 @@ export default {
         })
 
         let board = this.$parent.game.opponent.board
-        if (board.filter((dude) => dude.keywords.includes('protect')).length > 0) {
+        const validTargetChecks = board.filter((dude) => dude.keywords.includes('protect'))
+
+        // Add a special 'tireless' check
+        if (validTargetChecks.filter((dude) => dude.power > 0).length > 0) {
           // We have a protector, so we can only attack the protector
-          this.validTargets = board.filter((dude) => dude.keywords.includes('protect'))
+          this.validTargets = validTargetChecks
         } else {
           // We don't have a protector, so we can attack anything
           this.validTargets = [

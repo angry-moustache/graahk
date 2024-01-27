@@ -66,7 +66,7 @@ class JoinGame extends Modal
                 'deck' => Deck::find($deck)
                     ->idList()
                     ->shuffle()
-                    ->map(fn (int $id) => Card::find($id)->toJavaScript())
+                    ->map(fn (int $id) => Card::find($id)->toJavaScript($user))
                     ->map(function (array $card) use ($player) {
                         $card['owner'] = $player;
 

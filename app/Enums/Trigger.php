@@ -32,10 +32,7 @@ enum Trigger: string implements HasLabel
     case OPPONENT_DUDE_DIES = 'opponent_dude_dies';
 
     case DRAW_CARD = 'draw_card';
-
-    // Used for game effects
-    case MULLIGANED = 'mulliganed';
-    case GAME_OVER = 'game_over';
+    case DRAW_SECOND_CARD = 'draw_second_card';
 
     public function getLabel(): ?string
     {
@@ -57,8 +54,7 @@ enum Trigger: string implements HasLabel
             self::PLAYER_DUDE_DIES => 'Dude you control dies',
             self::OPPONENT_DUDE_DIES => 'Dude your opponent controls dies',
             self::DRAW_CARD => 'After drawing a card',
-            self::MULLIGANED => 'Mulliganed (do not use)',
-            self::GAME_OVER => 'Game over (do not use)',
+            self::DRAW_SECOND_CARD => 'After drawing a card after your first',
         };
     }
 
@@ -82,8 +78,7 @@ enum Trigger: string implements HasLabel
             self::PLAYER_DUDE_DIES => 'When a dude you control dies,',
             self::OPPONENT_DUDE_DIES => 'When a dude your opponent controls dies,',
             self::DRAW_CARD => 'After you draw a card,',
-            self::MULLIGANED => 'DO NOT USE THIS TRIGGER',
-            self::GAME_OVER => 'DO NOT USE THIS TRIGGER',
+            self::DRAW_SECOND_CARD => 'After you draw a card after your first,',
         };
     }
 }

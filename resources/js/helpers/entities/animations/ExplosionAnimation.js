@@ -1,6 +1,6 @@
 import { Animation } from "./Animation"
 
-export class GainEnergyAnimation extends Animation {
+export class ExplosionAnimation extends Animation {
   constructor (...args) {
     super('gain_energy', ...args)
 
@@ -11,11 +11,13 @@ export class GainEnergyAnimation extends Animation {
   async resolve (callback, finallyCallback) {
     const div = this.data.target
     const width = this.data.width || 200
+    const image = this.data.image || 'explosion/yellow'
 
     this._meta = {
       x: (div.offsetLeft + div.offsetWidth / 2) - (width / 2),
       y: (div.offsetTop + div.offsetHeight / 2) - (width / 2),
-      width: width
+      width: width,
+      image: image,
     }
 
     super.resolve()

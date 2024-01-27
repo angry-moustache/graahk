@@ -1,0 +1,35 @@
+.animate-projectile {
+    transition: all 0.6s ease-in-out;
+    opacity: 0;
+    z-index: 999999;
+
+    animation: projectile .8s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+
+    &-thrown {
+        animation: projectile .8s, projectile-thrown .8s;
+        animation-iteration-count: 1;
+        animation-timing-function: linear;
+        animation-fill-mode: forwards;
+    }
+}
+
+@keyframes projectile {
+    20% { opacity: 1; }
+    65% { opacity: 1; }
+    80% { opacity: 0; }
+}
+
+@keyframes projectile-thrown {
+    0% {
+        transform: scale(0) rotate(0deg);
+    }
+    40% {
+        transform: scale(1.5) rotate(-180deg);
+    }
+    80% {
+        transform: scale(0) rotate(-360deg);
+    }
+}

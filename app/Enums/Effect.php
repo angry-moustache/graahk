@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+use App\Enums\Amount;
 use App\Enums\Traits\HasList;
 use App\Models\Card;
 use Filament\Forms\Components\Select;
@@ -30,6 +31,8 @@ enum Effect: string implements HasLabel
     case BOUNCE = 'bounce';
     case SILENCE = 'silence';
     case READY_DUDE = 'ready_dudes';
+    case SHUFFLE_INTO_DECK = 'shuffle_into_deck';
+    case SHUFFLE_INTO_OPPONENT_DECK = 'shuffle_into_opponents_deck';
 
     // Dude specific effects
     case UNNAMED_ONE = 'unnamed_one';
@@ -52,9 +55,10 @@ enum Effect: string implements HasLabel
             self::DRAW_SPECIFIC_TRIBE => 'Draw specific card (tribe)',
             self::DRAW_SPECIFIC_DUDE => 'Draw specific card (dude)',
             self::BOUNCE => 'Bounce',
-            self::SILENCE => 'Silence',
+            self::SILENCE => 'Stifle',
             self::READY_DUDE => 'Ready dude',
-
+            self::SHUFFLE_INTO_DECK => 'Shuffle into deck',
+            self::SHUFFLE_INTO_OPPONENT_DECK => 'Shuffle into opponent\'s deck',
             self::UNNAMED_ONE => 'Unnamed one effect',
         };
     }
@@ -63,31 +67,39 @@ enum Effect: string implements HasLabel
     {
         return match ($this) {
             self::SPAWN_TOKEN => [
-                TextInput::make('amount')->required(),
+                ...Amount::fields(),
                 Select::make('target')->options(Target::class)->required(),
                 Select::make('token')
                     ->options(fn () => Card::where('type', CardType::TOKEN)->orderBy('name')->pluck('name', 'id'))
                     ->required(),
             ],
             self::SPAWN_DUDE => [
-                TextInput::make('amount')->required(),
+                ...Amount::fields(),
                 Select::make('target')->options(Target::class)->required(),
                 Select::make('dude')
                     ->options(fn () => Card::where('type', CardType::DUDE)->orderBy('name')->pluck('name', 'id'))
                     ->required(),
             ],
+            self::STUN => [
+                Select::make('target')->options(Target::class)->required(),
+                Select::make('stun_type')->options([
+                    'ice' => 'Ice',
+                    'web' => 'Web',
+                ])->required(),
+            ],
             self::DUPLICATE,
             self::KILL,
             self::RESET_HEALTH,
-            self::STUN,
             self::BOUNCE,
             self::SILENCE,
             self::UNNAMED_ONE,
-            self::READY_DUDE => [
+            self::READY_DUDE,
+            self::SHUFFLE_INTO_DECK,
+            self::SHUFFLE_INTO_OPPONENT_DECK => [
                 Select::make('target')->options(Target::class)->required(),
             ],
             self::DRAW_SPECIFIC_COST => [
-                TextInput::make('amount')->required(),
+                ...Amount::fields(),
                 Select::make('operator')
                     ->required()
                     ->options(fn () => [
@@ -98,17 +110,17 @@ enum Effect: string implements HasLabel
                 TextInput::make('cost')->required(),
             ],
             self::DRAW_SPECIFIC_TRIBE => [
-                TextInput::make('amount')->required(),
+                ...Amount::fields(),
                 Select::make('tribe')->options(Tribe::class)->required(),
             ],
             self::DRAW_SPECIFIC_DUDE => [
-                TextInput::make('amount')->required(),
+                ...Amount::fields(),
                 Select::make('dude')
                     ->options(fn () => Card::where('type', CardType::DUDE)->orderBy('name')->pluck('name', 'id'))
                     ->required(),
             ],
             default => [
-                TextInput::make('amount')->required(),
+                ...Amount::fields(),
                 Select::make('target')->options(Target::class)->required(),
             ],
         };
@@ -116,15 +128,26 @@ enum Effect: string implements HasLabel
 
     public function toText(array $parameters): ?string
     {
+        $amountExtra = null;
+        if (isset($parameters['amount'])) {
+            if ($parameters['amount'] === 'X') {
+                $parameters['amount'] = $parameters['amount_multiplier'];
+                $amountExtra = Amount::tryFrom($parameters['amount_special'])?->toText();
+            } else {
+                $parameters['amount'] = $parameters['amount'];
+            }
+        }
+
         return collect(match ($this) {
             self::DRAW_CARDS => [
                 Target::from($parameters['target'])->toText(),
                 "draw {$parameters['amount']}",
                 Str::plural('card', $parameters['amount']),
+                $amountExtra,
             ],
             self::DEAL_DAMAGE => [
-                "deal {$parameters['amount']}",
-                'damage',
+                "deal {$parameters['amount']} damage",
+                $amountExtra,
                 'to',
                 Target::from($parameters['target'])->toText(),
             ],
@@ -132,27 +155,32 @@ enum Effect: string implements HasLabel
                 'spawn',
                 $parameters['amount'],
                 Str::plural(Card::find($parameters['token'])->name, $parameters['amount']),
+                $amountExtra,
                 Target::from($parameters['target']) === Target::OPPONENT ? 'for your opponent' : '',
             ],
             self::SPAWN_DUDE => [
                 'spawn',
                 $parameters['amount'],
                 Str::plural(Card::find($parameters['dude'])->name, $parameters['amount']),
+                $amountExtra,
                 Target::from($parameters['target']) === Target::OPPONENT ? 'for your opponent' : '',
             ],
             self::BUFF_DUDE => [
                 Target::from($parameters['target'])->toText(),
                 "gain {$parameters['amount']} power",
+                $amountExtra,
             ],
             self::HEAL => [
                 'heal',
                 Target::from($parameters['target'])->toText(),
                 "for {$parameters['amount']}",
+                $amountExtra,
             ],
             self::GAIN_ENERGY => [
                 Target::from($parameters['target'])->toText(),
                 Str::plural('gain', $parameters['amount']),
                 "{$parameters['amount']} energy",
+                $amountExtra,
             ],
             self::DUPLICATE => [
                 'duplicate',
@@ -174,6 +202,7 @@ enum Effect: string implements HasLabel
             self::DRAW_SPECIFIC_COST => [
                 "draw {$parameters['amount']}",
                 Str::plural('card', $parameters['amount']),
+                $amountExtra,
                 'that cost',
                 match ($parameters['operator']) {
                     'greater than equal' => 'greater than or equal to',
@@ -185,6 +214,7 @@ enum Effect: string implements HasLabel
             self::DRAW_SPECIFIC_TRIBE => [
                 "draw {$parameters['amount']}",
                 Str::plural('card', $parameters['amount']),
+                $amountExtra,
                 'of the <i>',
                 Tribe::from($parameters['tribe'])->toText(),
                 '</i> tribe'
@@ -192,11 +222,12 @@ enum Effect: string implements HasLabel
             self::DRAW_SPECIFIC_DUDE => [
                 "draw {$parameters['amount']}",
                 Str::plural('card', $parameters['amount']),
+                $amountExtra,
                 'named',
                 Card::find($parameters['dude'])->name,
             ],
             self::SILENCE => [
-                'silence',
+                'stifle',
                 Target::from($parameters['target'])->toText(),
             ],
             self::UNNAMED_ONE =>[
@@ -210,6 +241,16 @@ enum Effect: string implements HasLabel
             self::READY_DUDE => [
                 'ready',
                 Target::from($parameters['target'])->toText(),
+            ],
+            self::SHUFFLE_INTO_DECK => [
+                'shuffle',
+                Target::from($parameters['target'])->toText(),
+                'into your deck',
+            ],
+            self::SHUFFLE_INTO_OPPONENT_DECK => [
+                'shuffle',
+                Target::from($parameters['target'])->toText(),
+                'into your opponent\'s deck',
             ],
         })
             ->filter()

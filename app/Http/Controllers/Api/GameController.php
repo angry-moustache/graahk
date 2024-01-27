@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Card;
+use App\Models\Deck;
 use App\Models\Game;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GameController extends Controller
 {
@@ -12,7 +15,6 @@ class GameController extends Controller
     {
         $data = $game->data;
 
-        info($request->get('gameState'));
         foreach ($request->get('gameState') as $key => $value) {
             $data[$key] = $value;
         }
@@ -20,7 +22,7 @@ class GameController extends Controller
         $game->update(['data' => $data]);
     }
 
-    public function finish(Game $game, Request $request)
+    public function finish(Game $game)
     {
         if ($game->finished_at) {
             return;
@@ -28,6 +30,31 @@ class GameController extends Controller
 
         $game->update(['finished_at' => now()]);
 
-        // TODO: grant experience
+        // TODO: grant experience based on victory
+        collect($game->data['decks'])->each(function (int $deck, int $owner) {
+            $deck = Deck::find($deck);
+            $card = Card::find($deck->idList()->shuffle()->first());
+
+            $experience = DB::table('experience')
+                ->where('user_id', $owner)
+                ->where('card_id', $card->id)
+                ->first();
+
+            if ($experience) {
+                DB::table('experience')
+                    ->where('user_id', $owner)
+                    ->where('card_id', $card->id)
+                    ->update([
+                        'experience' => $experience->experience + 1000,
+                    ]);
+            } else {
+                DB::table('experience')
+                    ->insert([
+                        'user_id' => $owner,
+                        'card_id' => $card->id,
+                        'experience' => 1000,
+                    ]);
+            }
+        });
     }
 }

@@ -3,6 +3,6 @@
 ]) }}>
     <div
         class="w-full pt-[100%] rounded-lg bg-background bg-cover bg-center"
-        style="background-image: url({{ $user?->avatar_url }})"
+        style="background-image: url('{{ $user?->avatar_url }}')"
     ></div>
 </div>

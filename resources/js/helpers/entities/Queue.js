@@ -28,6 +28,8 @@ export class Queue {
   }
 
   processQueue () {
+    // console.log(`Jobs left: ${this.queue.length}`)
+
     if (this.queue.length === 0 && this.amount === 0) {
       this.isProcessing = false
 
@@ -39,8 +41,6 @@ export class Queue {
     } else {
       this.amount = 0
     }
-
-    // console.log(`Jobs left: ${this.queue.length}`)
 
     this.isProcessing = true
     window.nextJob = (() => {

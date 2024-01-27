@@ -38,8 +38,8 @@
       <button
         v-on:click="finish"
         v-bind:class="{
-          'bg-green-500 hover:bg-green-600 cursor-pointer': ! finishedMulligan,
-          'bg-gray-500 cursor-not-allowed': finishedMulligan,
+          'bg-green-500 hover:bg-green-600 cursor-pointer': ! finishedMulligan && canMulligan,
+          'bg-gray-500 cursor-not-allowed': finishedMulligan || ! canMulligan,
         }"
         class="block rounded px-4 py-2 font-bold text-surface"
       >
@@ -71,10 +71,12 @@ export default {
     return {
       selections: [],
       finishedMulligan: false,
+      canMulligan: false,
     }
   },
   async mounted () {
     this.finishedMulligan = (this.player.mulliganed > -1)
+    this.canMulligan = false
 
     if (this.player.hand.length === 0) {
       for (let i = 0; i < 5; i++) {
@@ -82,6 +84,8 @@ export default {
         await timeout(500)
       }
     }
+
+    this.canMulligan = true
   },
   methods: {
     selectCard (cardKey) {
@@ -93,7 +97,7 @@ export default {
       this.selections.push(cardKey)
     },
     async finish () {
-      if (this.finishedMulligan) {
+      if (this.finishedMulligan || ! this.canMulligan) {
         return
       }
 
@@ -118,16 +122,10 @@ export default {
         await timeout(500)
       }
 
-      let gameState = {}
-      gameState[`player_${this.player.id}`] = this.player
-      gameState[`player_${this.player.id}`].mulliganed = amount
-
-      window.axios.put(`/api/games/${this.gameId}`, {
-        gameState: gameState,
-      })
-
       window.game.event('mulliganed', {
         player: this.player.id,
+        hand: this.player.hand.map(card => card.uuid),
+        deck: this.player.deck.map(card => card.uuid),
         amount: amount,
       })
     },

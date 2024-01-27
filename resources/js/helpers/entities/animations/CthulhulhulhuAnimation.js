@@ -1,5 +1,5 @@
 import { Animation } from "./Animation"
-import { GainEnergyAnimation } from "./GainEnergyAnimation"
+import { ExplosionAnimation } from "./ExplosionAnimation"
 
 export class CthulhulhulhuAnimation extends Animation {
   constructor (...args) {
@@ -10,10 +10,14 @@ export class CthulhulhulhuAnimation extends Animation {
   }
 
   async resolve (callback = null, finallyCallback = null) {
-    this.addClass(this.data.target.$el(), 'animate-cthulhulhulhu')
+    this.addClass(this.data.source.$el(), 'animate-cthulhulhulhu')
     super.resolve()
 
-    new GainEnergyAnimation({ target: this.data.target.$el(), width: 500 }).resolve()
+    new ExplosionAnimation({
+      target: this.data.source.$el(),
+      width: 500,
+      image: 'explosion/red',
+    }).resolve()
 
     await window.timeout(this.duration)
 

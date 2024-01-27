@@ -18,7 +18,7 @@ class EmitEvent implements ShouldBroadcast
 
     public function __construct(
         private Game $game,
-        public Trigger $event,
+        public string $event,
         public array $data = [],
 
     ) {

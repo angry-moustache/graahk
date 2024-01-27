@@ -103,8 +103,10 @@ class Card extends Model
         );
     }
 
-    public function toJavaScript(): array
+    public function toJavaScript(null | User $user = null): array
     {
+        $user ??= auth()->user();
+
         return [
             'id' => $this->id,
             'uuid' => (string) Str::uuid(),
@@ -122,16 +124,21 @@ class Card extends Model
             'type' => $this->type,
             'ready' => false,
             'enterSpeed' => $this->enter_speed,
-            'level' => $this->getLevel(),
+            'level' => $this->getLevel($user),
         ];
     }
 
-    public function getLevel(): int
+    public function getLevel(null | User $user = null): int
     {
-        return $this->experience
-            ->where('id', auth()->id())
-            ->first()
-            ?->pivot->experience ?? 1;
+        $user = $user?->id ?? auth()->id();
+
+        $experience = $this->experience->where('id', $user)->first()
+            ?->pivot->experience;
+
+        if ($experience >= 3000) return 4;
+        elseif ($experience >= 2000) return 3;
+        elseif ($experience >= 1000) return 2;
+        else return 1;
     }
 
     public static function booted()

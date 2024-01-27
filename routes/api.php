@@ -12,4 +12,5 @@ Route::put('games/{game:id}/finish', [Api\GameController::class, 'finish']);
 
 Route::post('games/{game:id}/event', Api\EventController::class);
 
-Route::get('cards/{card:id}', [Api\CardController::class, 'show']);
+Route::get('cards/{card:id}/{user:id?}', [Api\CardController::class, 'show'])
+    ->withoutScopedBindings();

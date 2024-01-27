@@ -29,8 +29,11 @@
       <div class="relative" ref="decksize">
         <img src="/images/icons/decksize.jpg" alt="">
         <p
-          class="absolute inset-0 text-4xl font-bold items-center justify-center flex"
           v-text="player.deck.length"
+          v-bind:class="{
+            'absolute inset-0 text-4xl font-bold items-center justify-center flex': true,
+            'text-red-500 text-border-hard': player.deck.length <= 5,
+          }"
         ></p>
       </div>
 
