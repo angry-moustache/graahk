@@ -30,8 +30,6 @@ export class HandleAnimation {
       projectile: ProjectileAnimation,
     }
 
-    // console.log(this)
-
     if (this[this.data.animation] === undefined && animationMapper[this.data.animation] === undefined) {
       window.errorToast(`No animation ${this.data.animation}`)
       return await callback()
@@ -54,10 +52,12 @@ export class HandleAnimation {
 
   async energy_pulse () {
     await this.target.forEach(async (target, key) => {
-      await new ExplosionAnimation({ target: target.$el(), width: 400 }).resolve(() => {
-        if (key === 0) {
-          this.callback()
-        }
+      await new ExplosionAnimation({
+        target: target.$el(),
+        width: 400,
+        color: this.data.color || 'yellow',
+      }).resolve(() => {
+        if (key === 0) this.callback()
       })
     })
   }

@@ -1,0 +1,19 @@
+.animate-glowing {
+    animation: glowing 2s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: forwards;
+}
+
+// Glow
+@keyframes glowing {
+    0% {
+        box-shadow: 0 0 10px 10px rgba(255, 255, 255, .05);
+    }
+    50% {
+        box-shadow: 0 0 15px 15px rgba(255, 255, 255, .2);
+    }
+    100% {
+        box-shadow: 0 0 10px 10px rgba(255, 255, 255, .05);
+    }
+}

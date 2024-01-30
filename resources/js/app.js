@@ -1,4 +1,6 @@
 import './fit-text';
+import './tooltipper';
+
 import Pusher from 'pusher-js';
 import Play from './components/Play.vue';
 import { createApp } from 'vue';
@@ -41,14 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
 })
 
 Livewire.hook('commit', ({ succeed }) => {
-    succeed(() => {
-      window.setTimeout(() => {
-        if (! document.getElementById('app')) return
-        createApp({}).component('Play', Play).mount('#app')
-      }, 500)
-    })
+  succeed(() => {
+    window.setTimeout(() => window.mountApp(), 500)
+  })
 })
 
-if (document.getElementById('app')) {
+window.mountApp = (() => {
+  if (! document.getElementById('app')) return
   createApp({}).component('Play', Play).mount('#app')
-}
+})
+
+window.mountApp()

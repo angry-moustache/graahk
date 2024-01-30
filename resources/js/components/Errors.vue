@@ -1,10 +1,10 @@
 <template>
   <div
     class="w-full h-screen fixed inset-0 pointer-events-none"
-    style="z-index: 10000000000"
+    style="z-index: 1000000"
   >
     <TransitionGroup
-      class="flex flex-col gap-4 text-center mt-[5rem] text-4xl font-bold text-red-500 text-border"
+      class="flex flex-col gap-4 text-center mt-[5rem] text-4xl font-bold text-red-500 text-bordered"
       name="errors"
       tag="ul"
     >

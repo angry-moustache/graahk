@@ -4,13 +4,14 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{{ app('site')->getTitle() }}</title>
-        <link rel="icon" href="{{ asset('icon.png') }}" type="image/x-icon" />
+        <link rel="icon" href="{{ asset('images/icon.jpg') }}" type="image/x-icon" />
         @vite(['resources/css/app.scss'])
     </head>
 
     <body class="bg-background text-text">
         <livewire:modal-controller />
         <x-toasts />
+        <x-tooltipper />
 
         <x-main>
             {{ $slot }}

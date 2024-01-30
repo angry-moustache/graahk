@@ -34,6 +34,8 @@ enum Trigger: string implements HasLabel
     case DRAW_CARD = 'draw_card';
     case DRAW_SECOND_CARD = 'draw_second_card';
 
+    case ACTIVATE_ARTIFACT = 'activate_artifact';
+
     public function getLabel(): ?string
     {
         return match ($this) {
@@ -55,6 +57,8 @@ enum Trigger: string implements HasLabel
             self::OPPONENT_DUDE_DIES => 'Dude your opponent controls dies',
             self::DRAW_CARD => 'After drawing a card',
             self::DRAW_SECOND_CARD => 'After drawing a card after your first',
+
+            self::ACTIVATE_ARTIFACT => 'Activate artifact',
         };
     }
 
@@ -79,6 +83,8 @@ enum Trigger: string implements HasLabel
             self::OPPONENT_DUDE_DIES => 'When a dude your opponent controls dies,',
             self::DRAW_CARD => 'After you draw a card,',
             self::DRAW_SECOND_CARD => 'After you draw a card after your first,',
+
+            self::ACTIVATE_ARTIFACT => 'When you activate this artifact,',
         };
     }
 }

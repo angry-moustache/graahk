@@ -5,16 +5,17 @@
 ])
 
 <div
-    style="background-image: url('{{ $card->attachment->path() }}')"
+    data-card-id="{{ $card->id }}"
+    style="background-image: url('{{ $card->attachment->path() }}?1')"
     {{ $attributes->merge(['class' => '
-        graahk-card w-full rounded-xl overflow-hidden
+        graahk-card has-tooltip w-full rounded-xl overflow-hidden
         bg-cover bg-center relative
         text-black select-none aspect-[2.5/3.5]
-        isolate z-[-2]
+        isolate
     ']) }}
 >
     <div class="absolute inset-0 rounded-xl overflow-hidden">
-        @if ($level >= 4) <div class="z-[-1] rounded-xl overflow-hidden animate-foil"></div> @endif
+        @if ($level >= 4) <div class="z-[-1] rounded-xl overflow-hidden animate-foil -inset-4"></div> @endif
     </div>
 
     <img src="{{ asset('images/cards/dude-' . $level . '.svg')}}" />
@@ -25,8 +26,8 @@
     <span
         @class([
             'absolute w-[80%] text-lg',
-            'bottom-[36.5%] left-[8%]' => ($level <= 2),
-            'bottom-[5.5%] left-[36.5%]' => ($level > 2),
+            'bottom-[36.5%] left-[8%]' => ($level <= 1),
+            'bottom-[5.5%] left-[36.5%]' => ($level >= 2),
         ])
     >
         @if (is_string($card->tribes))
@@ -39,10 +40,10 @@
     @if (filled($text))
         <p @class([
             'absolute bottom-[14%] overflow-y-auto',
-            'left-[9%] w-[82%] top-[65%]' => ($level <= 2),
-            'left-[4%] w-[92%]' => ($level > 2),
-            'text-white text-border-hard' => ($level > 2),
-            'bg-black p-2 bg-opacity-25 rounded-lg' => ($level >= 3),
+            'left-[9%] w-[82%] top-[65%]' => ($level <= 1),
+            'left-[4%] w-[92%] p-2 rounded-lg bg-opacity-50' => ($level >= 2),
+            'bg-white p-2 bg-opacity-75' => ($level === 2),
+            'bg-black p-2 bg-opacity-50 text-white text-bordered-hard' => ($level >= 3),
         ])>
             {!! $text !!}
         </p>

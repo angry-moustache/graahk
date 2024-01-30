@@ -4,6 +4,12 @@
             <div class="flex flex-col gap-8 items-center">
                 <x-headers.h1 label="Waiting on another player..." />
                 <x-loading />
+
+                <x-form.button
+                    class="mt-12"
+                    label="Cancel matchmaking"
+                    wire:click="cancelMatchmaking()"
+                />
             </div>
         </div>
     @else

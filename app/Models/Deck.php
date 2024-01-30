@@ -49,7 +49,7 @@ class Deck extends Model
     public function list(): Collection
     {
         return Collection::wrap($this->cards)
-            ->filter(fn (int $amount, int $cardId) => Card::exists($cardId))
+            ->filter(fn (int $amount, int $cardId) => Card::find($cardId))
             ->map(fn (int $amount, int $cardId) => [
                 'amount' => $amount,
                 'card' => Card::find($cardId)->toJavaScript(),

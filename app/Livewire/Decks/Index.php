@@ -14,7 +14,7 @@ class Index extends Component
     {
         app('site')->title('Decks');
 
-        $this->decks = Deck::latest()
+        $this->decks = Deck::latest('updated_at')
             ->where('user_id', auth()->id())
             ->get();
     }

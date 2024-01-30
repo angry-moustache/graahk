@@ -14,6 +14,8 @@ class Edit extends Component
 {
     use CanToast;
 
+    public bool $loading = true;
+
     public Deck $deck;
 
     public Collection $deckList;
@@ -28,9 +30,7 @@ class Edit extends Component
     {
         app('site')->title($this->deck->name);
 
-        if ($this->deck->user_id !== auth()->id()) {
-            abort(403);
-        }
+        abort_if($this->deck->user_id !== auth()->id(), 403);
 
         $this->deckList = $this->deck->list();
         $this->name = $this->deck->name;
@@ -40,11 +40,24 @@ class Edit extends Component
         ]);
     }
 
+    public function doneLoading()
+    {
+        $this->loading = false;
+    }
+
     public function render()
     {
+        if ($this->loading) {
+            return view('livewire.loading');
+        }
+
         $this->filters = $this->filters->reject(fn ($i) => in_array($i, [null, '']));
 
-        $cards = Card::dudes()
+        $query = Card::query()
+            ->where(fn ($q) => $q->artifacts())
+            ->orWhere(fn ($q) => $q->dudes());
+
+        $cards = $query
             ->when($this->filters->get('set'), fn ($query, $set) => $query->whereHas('sets', fn ($query) => $query->where('id', $set)))
             ->when($this->filters->get('keyword'), fn ($query, $keyword) => $query->where('keywords', 'LIKE', "%\"{$keyword}\"%"))
             ->when($this->filters->get('tribe'), fn ($query, $tribe) => $query->where('tribes', 'LIKE', "%\"{$tribe}\"%"))
@@ -61,7 +74,7 @@ class Edit extends Component
 
         return view('livewire.decks.edit', [
             'cards' => $cards,
-            'cardList' => Card::dudes()->get()->mapWithKeys(fn (Card $card) => [$card->id => $card->toJavaScript()]),
+            'cardList' => $query->get()->mapWithKeys(fn (Card $card) => [$card->id => $card->toJavaScript()]),
             'sets' => Set::latest()->pluck('name', 'id'),
             'effects' => Enums\Effect::list(),
             'keywords' => Enums\Keyword::list(),
@@ -88,6 +101,8 @@ class Edit extends Component
             'main_card_id' => $this->mainCardId,
             'cards' => $this->deckList->pluck('amount', 'card.id'),
         ]);
+
+        $this->deck->touch();
 
         $this->toast('Deck has been saved!');
     }

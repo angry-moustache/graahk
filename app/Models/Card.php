@@ -56,6 +56,16 @@ class Card extends Model
         return $query->where('type', CardType::DUDE);
     }
 
+    public function scopeArtifacts($query)
+    {
+        return $query->where('type', CardType::ARTIFACT);
+    }
+
+    public function scopeTokens($query)
+    {
+        return $query->where('type', CardType::TOKEN);
+    }
+
     public function getTribes(): Collection
     {
         return Collection::wrap($this->tribes)->map(function (string $tribe) {
@@ -86,7 +96,7 @@ class Card extends Model
             }
 
             $text .= trim(implode(' ', [
-                $trigger ?? Trigger::tryFrom($effect['trigger'])?->toText(),
+                $trigger ?? Trigger::tryFrom($effect['trigger'])?->toText($effect),
                 Effect::tryFrom($effect['effect'])?->toText($effect),
             ]));
 

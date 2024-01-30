@@ -5,8 +5,10 @@ namespace App\Enums;
 use App\Enums\Amount;
 use App\Enums\Traits\HasList;
 use App\Models\Card;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Get;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Support\Str;
 
@@ -33,9 +35,11 @@ enum Effect: string implements HasLabel
     case READY_DUDE = 'ready_dudes';
     case SHUFFLE_INTO_DECK = 'shuffle_into_deck';
     case SHUFFLE_INTO_OPPONENT_DECK = 'shuffle_into_opponents_deck';
-
-    // Dude specific effects
     case UNNAMED_ONE = 'unnamed_one';
+    case GIVE_KEYWORD = 'give_keyword';
+
+    // Artifact effects
+    case GAIN_CHARGE = 'gain_charge';
 
     public function getLabel(): ?string
     {
@@ -55,33 +59,46 @@ enum Effect: string implements HasLabel
             self::DRAW_SPECIFIC_TRIBE => 'Draw specific card (tribe)',
             self::DRAW_SPECIFIC_DUDE => 'Draw specific card (dude)',
             self::BOUNCE => 'Bounce',
-            self::SILENCE => 'Stifle',
+            self::SILENCE => 'Silence',
             self::READY_DUDE => 'Ready dude',
             self::SHUFFLE_INTO_DECK => 'Shuffle into deck',
             self::SHUFFLE_INTO_OPPONENT_DECK => 'Shuffle into opponent\'s deck',
             self::UNNAMED_ONE => 'Unnamed one effect',
+            self::GIVE_KEYWORD => 'Give keyword',
+
+            // Artifact effects
+            self::GAIN_CHARGE => 'Gain charge',
         };
     }
 
     public function schema(): array
     {
+        $targetField = Grid::make()->schema(fn (Get $get) => [
+            Select::make('target')
+                ->options(Target::class)
+                ->reactive()
+                ->required(),
+
+            ...Target::tryFrom($get('target'))?->schema() ?? [],
+        ]);
+
         return match ($this) {
             self::SPAWN_TOKEN => [
                 ...Amount::fields(),
-                Select::make('target')->options(Target::class)->required(),
+                $targetField,
                 Select::make('token')
                     ->options(fn () => Card::where('type', CardType::TOKEN)->orderBy('name')->pluck('name', 'id'))
                     ->required(),
             ],
             self::SPAWN_DUDE => [
                 ...Amount::fields(),
-                Select::make('target')->options(Target::class)->required(),
+                $targetField,
                 Select::make('dude')
                     ->options(fn () => Card::where('type', CardType::DUDE)->orderBy('name')->pluck('name', 'id'))
                     ->required(),
             ],
             self::STUN => [
-                Select::make('target')->options(Target::class)->required(),
+                $targetField,
                 Select::make('stun_type')->options([
                     'ice' => 'Ice',
                     'web' => 'Web',
@@ -96,7 +113,7 @@ enum Effect: string implements HasLabel
             self::READY_DUDE,
             self::SHUFFLE_INTO_DECK,
             self::SHUFFLE_INTO_OPPONENT_DECK => [
-                Select::make('target')->options(Target::class)->required(),
+                $targetField,
             ],
             self::DRAW_SPECIFIC_COST => [
                 ...Amount::fields(),
@@ -119,9 +136,16 @@ enum Effect: string implements HasLabel
                     ->options(fn () => Card::where('type', CardType::DUDE)->orderBy('name')->pluck('name', 'id'))
                     ->required(),
             ],
+            self::GAIN_CHARGE => [
+                ...Amount::fields(),
+            ],
+            self::GIVE_KEYWORD => [
+                $targetField,
+                Select::make('keyword')->options(Keyword::class)->required(),
+            ],
             default => [
                 ...Amount::fields(),
-                Select::make('target')->options(Target::class)->required(),
+                $targetField,
             ],
         };
     }
@@ -138,18 +162,20 @@ enum Effect: string implements HasLabel
             }
         }
 
+        $target = Target::tryFrom($parameters['target'] ?? null)?->toText($parameters);
+
         return collect(match ($this) {
             self::DRAW_CARDS => [
-                Target::from($parameters['target'])->toText(),
+                $target,
                 "draw {$parameters['amount']}",
                 Str::plural('card', $parameters['amount']),
                 $amountExtra,
             ],
             self::DEAL_DAMAGE => [
                 "deal {$parameters['amount']} damage",
-                $amountExtra,
                 'to',
-                Target::from($parameters['target'])->toText(),
+                $target,
+                $amountExtra,
             ],
             self::SPAWN_TOKEN => [
                 'spawn',
@@ -166,38 +192,38 @@ enum Effect: string implements HasLabel
                 Target::from($parameters['target']) === Target::OPPONENT ? 'for your opponent' : '',
             ],
             self::BUFF_DUDE => [
-                Target::from($parameters['target'])->toText(),
+                $target,
                 "gain {$parameters['amount']} power",
                 $amountExtra,
             ],
             self::HEAL => [
                 'heal',
-                Target::from($parameters['target'])->toText(),
+                $target,
                 "for {$parameters['amount']}",
                 $amountExtra,
             ],
             self::GAIN_ENERGY => [
-                Target::from($parameters['target'])->toText(),
+                $target,
                 Str::plural('gain', $parameters['amount']),
                 "{$parameters['amount']} energy",
                 $amountExtra,
             ],
             self::DUPLICATE => [
                 'duplicate',
-                Target::from($parameters['target'])->toText(),
+                $target,
             ],
             self::KILL => [
                 'this kills',
-                Target::from($parameters['target'])->toText(),
+                $target,
             ],
             self::RESET_HEALTH => [
                 'reset',
-                Target::from($parameters['target'])->toText(),
+                $target,
                 'to their original power',
             ],
             self::STUN => [
                 'stun',
-                Target::from($parameters['target'])->toText(),
+                $target,
             ],
             self::DRAW_SPECIFIC_COST => [
                 "draw {$parameters['amount']}",
@@ -227,30 +253,36 @@ enum Effect: string implements HasLabel
                 Card::find($parameters['dude'])->name,
             ],
             self::SILENCE => [
-                'stifle',
-                Target::from($parameters['target'])->toText(),
+                'silence',
+                $target,
             ],
             self::UNNAMED_ONE =>[
                 'it gains 50 power for each friendly dude or token that died this game',
             ],
             self::BOUNCE => [
                 'return',
-                Target::from($parameters['target'])->toText(),
+                $target,
                 'to its owner\'s hand',
             ],
             self::READY_DUDE => [
                 'ready',
-                Target::from($parameters['target'])->toText(),
+                $target,
             ],
             self::SHUFFLE_INTO_DECK => [
                 'shuffle',
-                Target::from($parameters['target'])->toText(),
+                $target,
                 'into your deck',
             ],
             self::SHUFFLE_INTO_OPPONENT_DECK => [
                 'shuffle',
-                Target::from($parameters['target'])->toText(),
+                $target,
                 'into your opponent\'s deck',
+            ],
+            self::GAIN_CHARGE => [
+                'gain',
+                $parameters['amount'],
+                Str::plural('charge', $parameters['amount']),
+                $amountExtra,
             ],
         })
             ->filter()

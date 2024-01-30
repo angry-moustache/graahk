@@ -10,6 +10,7 @@
 @import 'animations/death';
 @import 'animations/foil';
 @import 'animations/game-finished';
+@import 'animations/glowing';
 @import 'animations/healed';
 @import 'animations/new-turn';
 @import 'animations/projectile';
@@ -42,6 +43,7 @@ html {
 
 :root {
     --color-primary: #6d6ab1;
+    --color-primary-hover: #5c5a9c;
     --color-background: #262425;
     --color-surface: #1c1c1c;
 
@@ -51,11 +53,11 @@ html {
     --color-error: #b20909;
 }
 
-.text-border {
+.text-bordered {
   text-shadow: 0 0 3px #000000, 0 0 5px #000000;
 }
 
-.text-border-hard {
+.text-bordered-hard {
     text-shadow: -1px 0 rgba(black, .8), 0 1px rgba(black, .8), 1px 0 rgba(black, .8), 0 -1px rgba(black, .8);
 }
 

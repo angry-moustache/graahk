@@ -19,7 +19,6 @@
       v-if="game.haveMulliganed()"
     >
       <Errors ref="errors" />
-      <Tooltip ref="tooltip" />
 
       <div class="absolute z-20 inset-0 pointer-events-none">
         <Animation
@@ -55,13 +54,11 @@
             name="dude"
             tag="div"
           >
-            <Dude
-              v-for="dude in game.opponent.board"
-              v-bind:key="dude.uuid"
-              :dude="dude"
-              v-on:click="target(dude)"
-              v-on:mouseenter="tooltip(dude)"
-              v-on:mouseleave="tooltip(null)"
+            <CardBoard
+              v-for="card in game.opponent.board"
+              v-bind:key="card.uuid"
+              :card="card"
+              v-on:click="target(card)"
             />
           </TransitionGroup>
         </Board>
@@ -76,13 +73,11 @@
             name="dude"
             tag="div"
           >
-            <Dude
-              v-for="dude in game.player.board"
-              v-bind:key="dude.uuid"
-              :dude="dude"
-              v-on:click="target(dude)"
-              v-on:mouseenter="tooltip(dude)"
-              v-on:mouseleave="tooltip(null)"
+            <CardBoard
+              v-for="card in game.player.board"
+              v-bind:key="card.uuid"
+              :card="card"
+              v-on:click="target(card)"
             />
           </TransitionGroup>
         </Board>
@@ -106,81 +101,39 @@
                 :card-key="key"
                 :can-play="canDoAnything() && card.cost <= game.player.energy"
                 v-on:play-card="playCard"
-                v-on:mouseenter="tooltip(card)"
-                v-on:mouseleave="tooltip(null)"
               />
             </TransitionGroup>
           </div>
         </div>
       </div>
 
-      <div class="flex flex-col gap-4 h-screen w-[15rem] bg-surface border-l border-l-border justify-center items-center">
+      <div class="flex flex-col h-screen w-[15rem] bg-surface border-l border-l-border">
         <Targeting ref="targeting" />
 
-        <button
-          v-on:click="endTurn()"
-          v-bind:class="{
-            'bg-green-500 hover:bg-green-600 cursor-pointer': canDoAnything(),
-            'bg-gray-500 cursor-not-allowed': ! canDoAnything(),
-          }"
-          class="block rounded px-4 py-2 font-bold text-surface"
-        >
-          End Turn
-        </button>
-
-        <!-- <button
-          v-on:click="game.updateGameState()"
-          v-bind:class="{
-            'bg-green-500 hover:bg-green-600 cursor-pointer': canDoAnything(),
-            'bg-gray-500 cursor-not-allowed': ! canDoAnything(),
-          }"
-          class="block rounded px-4 py-2 font-bold text-surface"
-        >
-          Save the game
-        </button>
-
-        <button
-          v-on:click="game.effect('draw_cards', { amount: 1 }, [game.currentPlayer])"
-          v-bind:class="{
-            'bg-green-500 hover:bg-green-600 cursor-pointer': canDoAnything(),
-            'bg-gray-500 cursor-not-allowed': ! canDoAnything(),
-          }"
-          class="block rounded px-4 py-2 font-bold text-surface"
-        >
-          Draw a card
-        </button>
-
-        <button
-          v-on:click="game.effect('gain_energy', { amount: 3 }, [game.currentPlayer])"
-          v-bind:class="{
-            'bg-green-500 hover:bg-green-600 cursor-pointer': canDoAnything(),
-            'bg-gray-500 cursor-not-allowed': ! canDoAnything(),
-          }"
-          class="block rounded px-4 py-2 font-bold text-surface"
-        >
-          Gain 3 energy
-        </button>
-
-        <button
-          v-on:click="game.cleanup()"
-          v-bind:class="{
-            'bg-green-500 hover:bg-green-600 cursor-pointer': canDoAnything(),
-            'bg-gray-500 cursor-not-allowed': ! canDoAnything(),
-          }"
-          class="block rounded px-4 py-2 font-bold text-surface"
-        >
-          Cleanup
-        </button>
-
-        <div>
-          Jobs running:
-          <span v-html="jobs.isProcessing"></span>
+        <div class="flex items-center justify-center w-full h-[80vh]">
+          <button
+            v-on:click="endTurn()"
+            v-bind:class="{
+              'bg-green-500 hover:bg-green-600 cursor-pointer': canDoAnything(),
+              'bg-gray-500 cursor-not-allowed': ! canDoAnything(),
+            }"
+            class="block rounded px-6 py-3 font-bold text-2xl text-surface"
+          >
+            End Turn
+          </button>
         </div>
 
-        <div>
-          Jobs total:
-          <span v-html="jobs.count()"></span>
-        </div> -->
+        <div class="flex items-center justify-center w-full h-[20vh]">
+          <button
+            v-on:click="surrender()"
+            class="
+              bg-red-500 hover:bg-red-600 cursor-pointer
+              block rounded px-4 py-2 font-bold text-surface
+            "
+          >
+            Surrender
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -189,9 +142,8 @@
 <script>
 import Card from './Card.vue'
 import Board from './Board.vue'
-import Dude from './Dude.vue'
+import CardBoard from './CardBoard.vue'
 import Player from './Player.vue'
-import Tooltip from './Tooltip.vue'
 import Animation from './animations/Animation.vue'
 import Targeting from './Targeting.vue'
 import Errors from './Errors.vue'
@@ -207,9 +159,8 @@ export default {
   components: {
     Card,
     Board,
-    Dude,
+    CardBoard,
     Player,
-    Tooltip,
     Animation,
     Targeting,
     Errors,
@@ -233,8 +184,6 @@ export default {
   created () {
     this.game = window.game = new Game(this)
     this.jobs = window.jobs = reactive(new Queue())
-
-    console.log(this.game)
 
     this.gameCompleted = this.game.completed
 
@@ -282,9 +231,14 @@ export default {
           && this.jobs.checkQueueEmpty()
           && ! this.gameCompleted
     },
-    tooltip (card) {
-      this.$refs.tooltip.show(card)
-    },
+    surrender () {
+      if (window.confirm('Are you sure you want to surrender?')) {
+        this.game.event('surrender', {
+          winner: this.game.opponent.uuid,
+          loser: this.game.player.uuid,
+        })
+      }
+    }
   },
 }
 </script>

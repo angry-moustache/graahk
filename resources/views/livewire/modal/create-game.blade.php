@@ -2,19 +2,30 @@
     <x-slot:main>
         <x-headers.h2 label="Create table" />
 
-        <div class="flex flex-col w-1/2 gap-4">
+        <div class="flex flex-col w-full gap-4">
             <x-form.input
                 wire:model="fields.name"
                 label="Table name"
                 nullable
             />
 
-            <x-form.select
-                wire:model="fields.deck_id"
-                :options="$decks"
-                label="Deck"
-                nullable
-            />
+            <div
+                class="grid grid-cols-3 gap-4 overflow-y-auto max-h-[55vh] p-2"
+                x-data="{
+                    deck: @entangle('fields.deck_id'),
+                }"
+            >
+                @foreach ($decks as $deck)
+                    <x-deck
+                        :$deck
+                        x-on:click.prevent="deck = {{ $deck->id }}"
+                        x-bind:class="{
+                            'opacity-25': deck !== {{ $deck->id }},
+                            'opacity-100': deck === {{ $deck->id }},
+                        }"
+                    />
+                @endforeach
+            </div>
         </div>
 
         <div>

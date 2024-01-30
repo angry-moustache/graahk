@@ -1,3 +1,4 @@
+import { Dude } from "../entities/Dude"
 import { Player } from "../entities/Player"
 import { AttackAnimation } from "../entities/animations/AttackAnimation"
 
@@ -18,7 +19,7 @@ export class Attack {
 
         new AttackAnimation({ attacker: attacker, defender: defender }).resolve(async (animation) => {
           defender.deal_damage({ amount: a })
-          if (! (defender instanceof Player) && ! defender.keywords.includes('scenery')) {
+          if (defender instanceof Dude && ! defender.keywords.includes('scenery')) {
             attacker.deal_damage({ amount: d })
           }
 

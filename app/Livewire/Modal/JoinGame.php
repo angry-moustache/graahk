@@ -23,7 +23,9 @@ class JoinGame extends Modal
         $this->decks = auth()->user()
             ->decks
             ->filter(fn (Deck $deck) => $deck->isLegal())
-            ->pluck('name', 'id');
+            ->sortByDesc('updated_at');
+
+        $this->fields['deck_id'] = $this->decks->first()->id ?? null;
     }
 
     public function render()

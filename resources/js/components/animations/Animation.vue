@@ -1,5 +1,5 @@
 <template>
-  <div v-if="animation._meta" class="relative" style="z-index: 100000;">
+  <div v-if="animation._meta" class="relative" style="z-index: 10000000;">
     <img
       v-if="animation._meta.image"
       class="absolute"

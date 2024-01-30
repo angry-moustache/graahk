@@ -6,7 +6,7 @@
             mainCardId: @entangle('mainCardId'),
             cardList: @js($cardList),
             addCard (id) {
-                const card = this.deckList.find(card => card.card.id === id)
+                const card = this.deckList.find((card) => card.card.id === id)
 
                 if (card) {
                     if (card.amount < 4) {
@@ -20,13 +20,13 @@
                 }
             },
             removeCard (id) {
-                const card = this.deckList.find(card => card.card.id === id)
+                const card = this.deckList.find((card) => card.card.id === id)
 
                 if (card) {
                     if (card.amount > 1) {
                         card.amount--
                     } else {
-                        this.deckList = this.deckList.filter(card => card.card.id !== id)
+                        this.deckList = this.deckList.filter((card) => card.card.id !== id)
                     }
                 }
             },
@@ -60,7 +60,10 @@
 
                 <div class="flex flex-col gap-2">
                     <template x-for="card in getDeckList()">
-                        <div class="flex gap-2 items-center relative cursor-pointer">
+                        <div
+                            class="has-tooltip flex gap-2 items-center relative cursor-pointer"
+                            x-bind:data-card-id="card.card.id"
+                        >
                             <div
                                 style="background-image: url('{{ asset('images/frames/nameplate.svg') }}')"
                                 x-on:click="removeCard(card.card.id)"
@@ -96,11 +99,20 @@
                 </div>
             </div>
 
-            <x-form.button
-                class="w-full"
-                wire:click="saveDeck"
-                label="Save changes"
-            />
+            <div class="flex gap-4">
+                <x-form.button
+                    class="w-full"
+                    wire:click="saveDeck"
+                    label="Save changes"
+                />
+
+                <x-form.button
+                    x-on:click="window.openModal('delete-deck', { id: {{ $deck->id }} })"
+                    class="bg-red-600 hover:bg-red-800"
+                >
+                    <x-heroicon-s-trash class="w-6 h-6" />
+                </x-form.button>
+            </div>
         </div>
 
         {{-- Cardpool --}}
@@ -217,7 +229,7 @@
                             x-on:click="addCard({{ $card->id }})"
                             class="w-1/4 p-2 hover:opacity-75 transition-all cursor-pointer"
                             x-bind:class="{
-                                '!opacity-25 p-3': (deckList.find(card => card.card.id === {{ $card->id }})?.amount || 0) >= 4,
+                                '!opacity-25 p-3': (deckList.find((card) => card.card.id === {{ $card->id }})?.amount || 0) >= 4,
                             }"
                         >
                             <x-card :$card />

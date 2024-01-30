@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\EmitEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Card;
 use App\Models\Deck;
 use App\Models\Game;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -31,7 +33,7 @@ class GameController extends Controller
         $game->update(['finished_at' => now()]);
 
         // TODO: grant experience based on victory
-        collect($game->data['decks'])->each(function (int $deck, int $owner) {
+        $gains = collect($game->data['decks'])->mapWithKeys(function (int $deck, int $owner) {
             $deck = Deck::find($deck);
             $card = Card::find($deck->idList()->shuffle()->first());
 
@@ -55,6 +57,12 @@ class GameController extends Controller
                         'experience' => 1000,
                     ]);
             }
+
+            return [
+                $owner => $card->toJavaScript(User::find($owner))
+            ];
         });
+
+        EmitEvent::dispatch($game, 'exp_gain', $gains->toArray());
     }
 }

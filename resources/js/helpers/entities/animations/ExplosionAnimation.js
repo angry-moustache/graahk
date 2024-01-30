@@ -11,7 +11,7 @@ export class ExplosionAnimation extends Animation {
   async resolve (callback, finallyCallback) {
     const div = this.data.target
     const width = this.data.width || 200
-    const image = this.data.image || 'explosion/yellow'
+    const image = 'explosion/' + (this.data.color || 'yellow')
 
     this._meta = {
       x: (div.offsetLeft + div.offsetWidth / 2) - (width / 2),

@@ -3,11 +3,14 @@
 namespace App\Livewire;
 
 use App\Models\Set;
+use App\Models\User;
 use Livewire\Component;
 
 class Dashboard extends Component
 {
     public null | Set $currentSet = null;
+
+    public int $level = 1;
 
     public function setSet(Set $set)
     {
@@ -16,8 +19,12 @@ class Dashboard extends Component
 
     public function render()
     {
+        $sets = Set::latest()->get();
+        $this->currentSet ??= $sets->last();
+
         return view('livewire.dashboard', [
-            'sets' => Set::latest()->get(),
+            'sets' => $sets,
+            'users' => User::latest()->get()->sortByDesc->gamesPlayed(),
         ]);
     }
 }

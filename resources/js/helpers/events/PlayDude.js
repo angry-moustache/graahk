@@ -1,9 +1,19 @@
+import { Artifact } from "../entities/Artifact"
 import { Dude } from "../entities/Dude"
 import { reactive } from "vue"
+import { Token } from "../entities/Token"
 
 export class PlayDude {
   resolve (game, event) {
-    let card = reactive(new Dude(event.data.card))
+    let card
+
+    if (event.data.card.type === 'artifact') {
+      card = reactive(new Artifact(event.data.card))
+    } else if (event.data.card.type === 'token') {
+      card = reactive(new Token(event.data.card))
+    } else {
+      card = reactive(new Dude(event.data.card))
+    }
 
     game._vue.queue([
       (async () => {
@@ -25,15 +35,24 @@ export class PlayDude {
         window.nextJob()
       }),
       (() => {
-        game.checkTriggers('play_dude', [...game.currentPlayer.board, ...game.opponent.board].filter((c) => c.uuid !== card.uuid))
+        if (card instanceof Dude) {
+          game.checkTriggers('play_dude', [...game.currentPlayer.board, ...game.opponent.board].filter((c) => c.uuid !== card.uuid))
+        }
+
         window.nextJob()
       }),
       (() => {
-        game.checkTriggers('player_play_dude', game.currentPlayer.board.filter((c) => c.uuid !== card.uuid))
+        if (card instanceof Dude) {
+          game.checkTriggers('player_play_dude', game.currentPlayer.board.filter((c) => c.uuid !== card.uuid))
+        }
+
         window.nextJob()
       }),
       (() => {
-        game.checkTriggers('opponent_play_dude', game.currentOpponent.board.filter((c) => c.uuid !== card.uuid))
+        if (card instanceof Dude) {
+          game.checkTriggers('opponent_play_dude', game.currentOpponent.board.filter((c) => c.uuid !== card.uuid))
+        }
+
         window.nextJob()
       }),
     ])

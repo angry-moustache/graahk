@@ -28,14 +28,12 @@ export class Queue {
   }
 
   processQueue () {
-    // console.log(`Jobs left: ${this.queue.length}`)
-
     if (this.queue.length === 0 && this.amount === 0) {
       this.isProcessing = false
 
       window.cleanupTimer = setTimeout(() => {
         window.game.cleanup()
-      }, 100)
+      }, 500)
 
       return
     } else {
@@ -43,11 +41,15 @@ export class Queue {
     }
 
     this.isProcessing = true
+
+    // Used to call the next job in the queue
     window.nextJob = (() => {
-      // console.log('--- NEXT JOB --- #', this.amount)
       this.amount = Math.max(0, this.amount - 1)
+
+      if (window.game.completed) return
+
       this.processQueue()
-    }) // Used to call the next job in the queue
+    })
 
     const current = this.queue.shift()
     current() // Call the current callback

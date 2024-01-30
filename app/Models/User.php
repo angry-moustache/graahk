@@ -47,6 +47,13 @@ class User extends Authenticatable
 
     public function getAvatarUrlAttribute(): string
     {
-        return $this->avatar?->path() ?? asset('/images/logo.jpg');
+        return $this->avatar?->path() ?? asset('/images/icon.jpg');
+    }
+
+    public function gamesPlayed(): int
+    {
+        return Game::where('user_id_1', $this->id)
+            ->orWhere('user_id_2', $this->id)
+            ->count();
     }
 }

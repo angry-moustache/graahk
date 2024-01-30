@@ -36,4 +36,15 @@ enum Keyword: string implements HasLabel
             self::TIRELESS => 'Tireless',
         };
     }
+
+    public function description(): ?string
+    {
+        return match ($this) {
+            self::PROTECT => 'This dude must be attacked first, if able',
+            self::RUSH => 'Can attack in the same turn this dude was played',
+            self::GHOSTLY => 'This dude cannot be directly targetted by abilities',
+            self::SCENERY => 'This dude cannot attack or deal damage',
+            self::TIRELESS => 'This dude does not die when its power reaches 0',
+        };
+    }
 }

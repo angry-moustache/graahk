@@ -1,7 +1,7 @@
 <template>
   <div
     class="w-full h-screen fixed inset-0 items-center justify-center flex"
-    style="z-index: 10000000000"
+    style="z-index: 1000000"
   >
     <div class="flex flex-col gap-12 items-center justify-center w-3/5">
       <h1 class="text-4xl font-bold uppercase">Select cards to mulligan</h1>

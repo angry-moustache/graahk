@@ -1,20 +1,29 @@
 <a
     href="{{ $deck->route() }}"
-    style="background-image: url('{{ $deck->image()?->path() }}')"
-    class="
-        relative flex flex-col aspect-[2.5/3.5]
-        bg-surface bg-cover bg-center bg-no-repeat
-        justify-end gap-2 text-white text-xl
-    "
+    {{ $attributes->except('deck')->merge(['class' => '
+        flex flex-col gap-4 w-full rounded-xl p-4 bg-surface relative
+        hover:scale-105 transition-all duration-200
+    ']) }}
 >
-    <div class="bg-black p-4 bg-opacity-75">
-        {{ $deck->name }}
-    </div>
-
     @if (! $deck->isLegal())
-        <div class="absolute top-4 left-4 text-error flex items-center gap-4 bg-black py-2 px-4 rounded-lg bg-opacity-75">
+        <div class="
+            absolute top-6 left-6 text-error flex items-center gap-3
+            py-2 pr-4 pl-3 rounded-lg bg-opacity-75 bg-black
+        ">
             <x-heroicon-o-exclamation-triangle class="w-6 h-6" />
             Not a legal deck
         </div>
     @endif
+
+    <div
+        class="w-full rounded-lg aspect-[2/1] bg-cover bg-[center_top_-5rem] bg-background"
+        style="background-image: url('{{ $deck->image()?->path() }}')"
+    ></div>
+
+    <div class="flex flex-col grow items-center gap-1">
+        <x-headers.h3 class="text-xl" :label="$deck->name" />
+        <p class="opacity-50 text-sm">
+            {{ $deck->mainCard?->name ?? $deck->created_at?->isoFormat('MMM Do, YYYY') }}
+        </p>
+    </div>
 </a>

@@ -1,16 +1,17 @@
 <template>
-  <div class="w-[10rem]" ref="aimer">
+  <div class="h-0" ref="aimer">
     <!-- <Card v-if="aimer" :card="aimer"  /> -->
 
     <canvas
       id="canvas-targeting"
       class="w-full h-screen fixed inset-0 pointer-events-none"
-      style="z-index: 100000"
+      style="z-index: 1000000"
     />
   </div>
 </template>
 
 <script>
+import { Artifact } from '../helpers/entities/Artifact'
 import { Dude } from '../helpers/entities/Dude'
 import { Player } from '../helpers/entities/Player'
 import Card from './Card.vue'
@@ -53,8 +54,8 @@ export default {
     setAimer (target) {
       if (target instanceof Player || target.owner !== this.$parent.game.player.id) return
 
-      // We're starting an attack
       if (target instanceof Dude && target.owner === this.$parent.game.player.id) {
+        // We're starting an attack
         if (! target.ready) return
         if (target.keywords.includes('scenery')) return
 
@@ -70,7 +71,7 @@ export default {
         })
 
         let board = this.$parent.game.opponent.board
-        const validTargetChecks = board.filter((dude) => dude.keywords.includes('protect'))
+        const validTargetChecks = board.filter((card) => card.keywords.includes('protect'))
 
         // Add a special 'tireless' check
         if (validTargetChecks.filter((dude) => dude.power > 0).length > 0) {
@@ -83,11 +84,16 @@ export default {
             ...this.$parent.game.opponent.board,
           ]
         }
+      } else if (target instanceof Artifact && target.owner === this.$parent.game.player.id) {
+        // We're activating an artifact ability
       } else {
         // Card in our hand
         this.aimer = target
 
-        let effectTarget = this.aimer.effects[0].target
+        let effectTarget = this.aimer.effects
+          .find((e) => ['dude', 'dude_player', 'dude_opponent'].includes(e.target))
+          .target
+
         switch (effectTarget) {
           case 'dude':
             this.validTargets = [
@@ -101,6 +107,10 @@ export default {
           case 'dude_opponent':
             this.validTargets = this.$parent.game.opponent.board
             break
+        }
+
+        if (['dude', 'dude_player', 'dude_opponent'].includes(effectTarget)) {
+          this.validTargets = this.validTargets.filter((c) => c instanceof Dude)
         }
 
         this.validTargets = this.validTargets.filter((c) => ! c.keywords.includes('ghostly'))

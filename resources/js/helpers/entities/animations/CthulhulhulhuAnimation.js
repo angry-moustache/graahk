@@ -16,7 +16,7 @@ export class CthulhulhulhuAnimation extends Animation {
     new ExplosionAnimation({
       target: this.data.source.$el(),
       width: 500,
-      image: 'explosion/red',
+      color: 'red',
     }).resolve()
 
     await window.timeout(this.duration)

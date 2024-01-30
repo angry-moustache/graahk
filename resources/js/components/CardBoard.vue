@@ -1,30 +1,31 @@
 <template>
   <div
-    :id="'dude-' + dude.uuid"
-    class="relative flex justify-center origin-center transition-all duration-500"
+    :id="card.type + '-' + card.uuid"
+    class="has-tooltip relative flex justify-center origin-center transition-all duration-500"
+    v-bind:data-card-id="card.id"
   >
     <div
-      v-bind:style="{ backgroundImage: `url('${dude.image}')` }"
+      v-bind:style="{ backgroundImage: `url('${card.image}')` }"
       class="
         w-[10rem] aspect-[2.5/3.5]
         border-[2px] bg-cover bg-center rounded-xl overflow-hidden
       "
       v-bind:class="{
-        'border-white': dude.ready,
-        'border-black': ! dude.ready,
-        '!border-green-500': dude.highlighted,
+        'border-white': card.ready,
+        'border-black': ! card.ready,
+        '!border-green-500': card.highlighted,
       }"
     ></div>
       <!-- <div class="absolute opacity-50">
-        <span v-text="dude.uuid" />
+        <span v-text="card.uuid" />
       </div> -->
 
-      <div v-if="dude.level >= 4" class="rounded-xl overflow-hidden animate-foil"></div>
+      <div v-if="card.level >= 4" class="rounded-xl overflow-hidden animate-foil"></div>
 
       <div class="absolute -inset-[2rem] pointer-events-none">
         <TransitionGroup name="debuff">
           <img
-            v-for="(debuff, key) in dude.debuffs"
+            v-for="(debuff, key) in card.debuffs"
             v-bind:key="key"
             v-bind:src="`/images/visual-effects/${debuff.visual}.png`"
             class="absolute inset-0 w-full"
@@ -33,13 +34,13 @@
         </TransitionGroup>
 
         <img
-          v-for="(keyword, key) in dude.keywords.filter((effect) => effect !== 'rush')"
+          v-for="(keyword, key) in card.keywords.filter((effect) => effect !== 'rush')"
           v-bind:key="key"
           v-bind:src="`/images/visual-effects/${keyword}.png`"
           class="absolute inset-0 w-full"
           v-bind:class="
             `visual-effect-${keyword} `
-            + (dude.keywords.includes('tireless') && dude.power <= 0 ? 'opacity-50' : '')
+            + (card.keywords.includes('tireless') && card.power <= 0 ? 'opacity-50' : '')
           "
         />
       </div>
@@ -50,16 +51,16 @@
             border-[2px] border-black rounded-2xl
         "
         v-bind:class="{
-          'border-white': dude.ready,
-          'border-black': ! dude.ready,
-          '!border-green-500': dude.highlighted,
+          'border-white': card.ready,
+          'border-black': ! card.ready,
+          '!border-green-500': card.highlighted,
         }"
       >
         <span
-          v-text="dude.power"
+          v-text="card.power"
           v-bind:class="{
-            'text-green-500': dude.originalPower < dude.power,
-            'text-red-500': dude.originalPower > dude.power,
+            'text-green-500': card.originalPower < card.power,
+            'text-red-500': card.originalPower > card.power,
           }"
         />
       </div>
@@ -68,13 +69,10 @@
 
 <script>
 export default {
-  name: 'dude',
+  name: 'card',
   props: {
-    dude: Object,
+    card: Object,
   },
-  // mounted () {
-  //   console.log('dude', this.dude)
-  // },
 };
 </script>
 

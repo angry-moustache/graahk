@@ -1,5 +1,7 @@
 <div class="w-[300px] h-screen bg-surface px-4 py-8 flex flex-col gap-4">
-    <h1 class="text-4xl text-center w-full font-bold mb-12">GRAAHK</h1>
+    <a href="{{ route('dashboard.index') }}">
+        <img src="{{ asset('images/logo.png') }}" class="p-4" />
+    </a>
 
     <x-navigation.item
         route="{{ route('dashboard.index') }}"

@@ -34,4 +34,11 @@ class Play extends Component
             'state' => $data->toArray(),
         ]))->layout('components.layouts.game');
     }
+
+    public function cancelMatchmaking()
+    {
+        $this->game->delete();
+
+        return redirect()->route('server.index');
+    }
 }

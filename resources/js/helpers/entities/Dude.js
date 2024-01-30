@@ -17,6 +17,7 @@ export class Dude {
 
   $el () {
     return document.getElementById('dude-' + this.uuid)
+      || document.getElementById('token-' + this.uuid)
   }
 
   coords () {
@@ -116,8 +117,9 @@ export class Dude {
   }
 
   async ready_dudes () {
-    this.ready = ! this.debuffs.some((debuff) => debuff.type === 'stun')
     this.willClearStuns = this.debuffs.some((debuff) => debuff.type === 'stun')
+    this.ready = ! this.debuffs.some((debuff) => debuff.type === 'stun')
+      && ! this.keywords.includes('scenery')
 
     if (this.ready) {
       await new ReadyAnimation({ target: this }).resolve(null, () => {

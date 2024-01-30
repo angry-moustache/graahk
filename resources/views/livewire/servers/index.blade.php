@@ -38,6 +38,13 @@
                                 })"
                             />
                         @endif
+
+                        @if (in_array(auth()->id(), [$game->user1?->id, $game->user2?->id]))
+                            <x-form.button
+                                label="Continue"
+                                x-on:click="window.location.href = '{{ route('game.play', $game) }}'"
+                            />
+                        @endif
                     </div>
                 </div>
             @endforeach

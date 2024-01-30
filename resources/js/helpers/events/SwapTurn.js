@@ -25,7 +25,7 @@ export class SwapTurn {
           }
         })
 
-        game.checkTriggers('start_turn', game.currentPlayer.board)
+        game.checkTriggers('start_turn', game.currentPlayer.board.filter((d) => d.dead === false))
         window.nextJob()
       }),
       (() => {
