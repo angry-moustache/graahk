@@ -167,6 +167,11 @@ export class Game {
   effect (effect, data, targets, source = null) {
     // Make sure to include the .nextJob() in the event itself
     window.game._vue.queue(async () => {
+      // Refetch the targets (see Clyde + Mirror)
+      // if (data.target) {
+      //   targets = this.getTargets(data.target, source, null, data)
+      // }
+
       if (targets.length === 0) {
         return window.nextJob()
       }
@@ -280,17 +285,17 @@ export class Game {
 
   // Send data to the server to update the game state
   updateGameState () {
-    window.setTimeout(() => {
-      let gameState = {}
-      gameState['completed'] = this.completed
-      gameState['afterGameUpgrades'] = this.afterGameUpgrades
-      gameState['current_player'] = this.currentPlayer.id
-      gameState[`player_${this.player.id}`] = this.player
-      gameState[`player_${this.opponent.id}`] = this.opponent
+    // window.setTimeout(() => {
+    //   let gameState = {}
+    //   gameState['completed'] = this.completed
+    //   gameState['afterGameUpgrades'] = this.afterGameUpgrades
+    //   gameState['current_player'] = this.currentPlayer.id
+    //   gameState[`player_${this.player.id}`] = this.player
+    //   gameState[`player_${this.opponent.id}`] = this.opponent
 
-      window.axios.put(`/api/games/${this._vue.gameId}`, {
-        gameState: gameState,
-      })
-    }, 100)
+    //   window.axios.put(`/api/games/${this._vue.gameId}`, {
+    //     gameState: gameState,
+    //   })
+    // }, 100)
   }
 }

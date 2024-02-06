@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Friday at 18 'o clock my time
+        $schedule->command('generate:weekly-pack --force')->fridays()->at('17:00');
     }
 
     /**

@@ -53,6 +53,7 @@ export class HandleAnimation {
   }
 
   async energy_pulse () {
+    console.log(this.target)
     await (this.target || []).forEach(async (target, key) => {
       await new ExplosionAnimation({
         target: target.$el(),

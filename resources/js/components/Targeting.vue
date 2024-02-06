@@ -126,7 +126,7 @@ export default {
         }
 
         if (! ['hand_target'].includes(effectTarget)) {
-          // this.validTargets = this.validTargets.filter((c) => ! c instanceof Dude || ! c.keywords.includes('ghostly'))
+          this.validTargets = this.validTargets.filter((c) => ! c instanceof Dude || ! c.keywords.includes('ghostly'))
         }
 
         this.effect = (() => {

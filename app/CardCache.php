@@ -22,7 +22,9 @@ class CardCache
 
     public static function get(): Collection
     {
-        return Cache::get(self::KEY, self::build());
+        $cards = Cache::get(self::KEY);
+
+        return $cards ?? self::build();
     }
 
     public static function flush(): void
