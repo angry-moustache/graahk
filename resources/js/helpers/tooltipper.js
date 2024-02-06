@@ -8,11 +8,6 @@ export class Tooltipper {
     document.addEventListener('mousemove', (e) => {
       this.setPosition(e)
     })
-
-    window.addEventListener('DOMMouseScroll', () => {
-      this.reset()
-      console.log('ugh')
-    }, false)
   }
 
   set (card, data, e) {

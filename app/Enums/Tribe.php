@@ -20,6 +20,9 @@ enum Tribe: string implements HasLabel
     case GILLED_GUILD = 'gilled_guild';
     case DESPAIR = 'despair';
     case EL_DORADO = 'el_dorado';
+    case CYCLIST = 'cyclist';
+
+    case RUSE = 'ruse';
 
     public function getLabel(): ?string
     {
@@ -35,6 +38,8 @@ enum Tribe: string implements HasLabel
             self::GILLED_GUILD => 'Gilled Guild',
             self::DESPAIR => 'Despair',
             self::EL_DORADO => 'El Dorado',
+            self::CYCLIST => 'Cyclist',
+            self::RUSE => 'Ruse',
         };
     }
 
@@ -52,6 +57,8 @@ enum Tribe: string implements HasLabel
             self::GILLED_GUILD => 'Gilled Guild',
             self::DESPAIR => 'Despair',
             self::EL_DORADO => 'El Dorado',
+            self::CYCLIST => 'Cyclist',
+            self::RUSE => 'Ruse',
         };
     }
 }

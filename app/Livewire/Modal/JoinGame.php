@@ -22,6 +22,7 @@ class JoinGame extends Modal
         $this->game = Game::find($params['gameId'] ?? null);
         $this->decks = auth()->user()
             ->decks
+            ->filter(fn (Deck $deck) => $deck->format === $this->game->format())
             ->filter(fn (Deck $deck) => $deck->isLegal())
             ->sortByDesc('updated_at');
 

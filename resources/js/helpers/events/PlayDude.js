@@ -2,6 +2,7 @@ import { Artifact } from "../entities/Artifact"
 import { Dude } from "../entities/Dude"
 import { reactive } from "vue"
 import { Token } from "../entities/Token"
+import { HandleAnimation } from "../entities/animations/HandleAnimation"
 
 export class PlayDude {
   resolve (game, event) {
@@ -21,14 +22,24 @@ export class PlayDude {
         card.opponent = game.currentOpponent.id
 
         card.ready = card.keywords.includes('rush')
+        card.glowing = false
 
         game.currentPlayer.board.push(card)
-        game.currentPlayer.hand = game.currentPlayer.hand.filter((c) => c.uuid !== card.uuid)
+        game.currentPlayer.hand = game.currentPlayer.hand.filter((c, key) => key !== event.data.key)
+        // game.currentPlayer.hand = game.currentPlayer.hand.filter((c) => c.uuid !== card.uuid)
         game.currentPlayer.energy -= card.cost
 
-        await timeout(card.enterSpeed || 0)
-
-        window.nextJob()
+        if (card.entranceAnimation?.animation) {
+          console.log(card)
+          window.setTimeout(() => {
+            new HandleAnimation(card, null, card.entranceAnimation, card).resolve(() => {
+              window.nextJob()
+            })
+          }, 1)
+        } else {
+          await timeout(card.enterSpeed || 0)
+          window.nextJob()
+        }
       }),
       (() => {
         game.checkTriggers('enter_field', [card], game.getTargets('from_uuid', null, event.data.target))

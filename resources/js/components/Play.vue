@@ -10,9 +10,10 @@
 
     <GameFinished
       v-if="gameCompleted"
-      v-bind:game="game"
       ref="game_over"
     />
+
+    <Display ref="display" />
 
     <div
       class="flex h-screen w-screen overflow-hidden relative"
@@ -20,7 +21,10 @@
     >
       <Errors ref="errors" />
 
-      <div class="absolute z-20 inset-0 pointer-events-none">
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style="z-index: 800"
+      >
         <Animation
           v-for="(animation, key) in animations"
           :key="key"
@@ -28,7 +32,10 @@
         />
       </div>
 
-      <div class="flex flex-col gap-4 h-screen w-[15rem] bg-surface border-r border-r-border justify-between">
+      <div
+        class="flex flex-col gap-4 h-screen w-[15rem] bg-surface border-r border-r-border justify-between"
+        style="z-index: 100"
+      >
         <Player
           :player="game.opponent"
           v-on:click="target(game.opponent)"
@@ -43,7 +50,10 @@
         />
       </div>
 
-      <div class="flex flex-col grow">
+      <div
+        class="flex flex-col grow"
+        style="z-index: 200"
+      >
         <Board
           :board="game.opponent.board"
           :active="! game.areCurrentPlayer()"
@@ -82,14 +92,17 @@
           </TransitionGroup>
         </Board>
 
-        <div class="relative flex justify-evenly h-[20vh] border-t border-t-border bg-surface">
+        <div
+          class="relative flex justify-evenly h-[20vh] border-t border-t-border bg-surface"
+          style="z-index: 200"
+        >
           <div
             class="
               absolute z-10 left-0 right-0 bottom-0 -mb-[50px] flex justify-center items-center gap-2
               transition-all duration-500 ease-in-out opacity-100
             "
             v-bind:class="{
-              'opacity-50': ! canDoAnything(),
+              'opacity-50 hover:opacity-100': ! canDoAnything(),
             }"
           >
             <TransitionGroup name="card">
@@ -99,8 +112,11 @@
                 :id="'hand-' + card.uuid"
                 :card="card"
                 :card-key="key"
-                :can-play="canDoAnything() && card.cost <= game.player.energy"
+                :green-border="canDoAnything() && card.cost <= game.player.energy"
+                :can-play="canDoAnything() && (card.cost <= game.player.energy || areTargeting())"
                 v-on:play-card="playCard"
+                :glowing="card.glowing"
+                hover-state
               />
             </TransitionGroup>
           </div>
@@ -144,6 +160,7 @@ import Card from './Card.vue'
 import Board from './Board.vue'
 import CardBoard from './CardBoard.vue'
 import Player from './Player.vue'
+import Display from './Display.vue'
 import Animation from './animations/Animation.vue'
 import Targeting from './Targeting.vue'
 import Errors from './Errors.vue'
@@ -161,6 +178,7 @@ export default {
     Board,
     CardBoard,
     Player,
+    Display,
     Animation,
     Targeting,
     Errors,
@@ -200,11 +218,14 @@ export default {
     target (target) {
       this.$refs.targeting.target(target)
     },
+    areTargeting () {
+      return this.$refs.targeting?.areTargeting()
+    },
     playCard (cardKey, data = {}) {
       if (! this.canDoAnything()) return
 
       let card = this.game.player.hand[cardKey]
-      if (this.$refs.targeting.areTargeting()) {
+      if (this.areTargeting()) {
         this.$refs.targeting.target(card)
       } else {
         const requiresTarget = card.effects.map((c) => c.target).some((t) => window.requiresTarget.includes(t))
@@ -220,7 +241,7 @@ export default {
       return this.$refs.targeting.victim
     },
     endTurn () {
-      if (! this.canDoAnything() || this.$refs.targeting.areTargeting()) return
+      if (! this.canDoAnything() || this.areTargeting()) return
       this.game.event('end_turn')
     },
     effect (effect, data, target = null) {

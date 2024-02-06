@@ -10,10 +10,12 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 
 class SetResource extends Resource
@@ -33,6 +35,9 @@ class SetResource extends Resource
 
                 TextInput::make('code')
                     ->required(),
+
+                Toggle::make('beta')
+                    ->label('Is in beta?'),
 
                 Grid::make()->schema([
                     AttachmentInput::make('attachment_id')
@@ -64,6 +69,9 @@ class SetResource extends Resource
                 TextColumn::make('code')
                     ->searchable()
                     ->sortable(),
+
+                ToggleColumn::make('beta')
+                    ->label('Is in beta?'),
 
                 AttachmentColumn::make('icon_id')
                     ->label('Icon'),

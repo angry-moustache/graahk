@@ -2,12 +2,20 @@
 
 namespace App\Livewire\Decks;
 
+use App\CardCache;
 use App\Enums;
+use App\Enums\CardType;
+use App\Enums\Effect;
+use App\Enums\Format;
+use App\Enums\Keyword;
+use App\Enums\Tribe;
 use App\Livewire\Traits\CanToast;
 use App\Models\Card;
 use App\Models\Deck;
 use App\Models\Set;
+use App\Models\WeeklyPack;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Livewire\Component;
 
 class Edit extends Component
@@ -25,6 +33,7 @@ class Edit extends Component
     public null | int $mainCardId = null;
 
     public Collection $filters;
+    public Collection $filterOptions;
 
     public function mount()
     {
@@ -35,8 +44,19 @@ class Edit extends Component
         $this->deckList = $this->deck->list();
         $this->name = $this->deck->name;
         $this->mainCardId = $this->deck->main_card_id;
+
         $this->filters = collect([
             'sort' => 'cost-asc',
+        ]);
+
+        $this->filterOptions = collect([
+            'sets' => [],
+            'effects' => [],
+            'keywords' => [],
+            'targets' => [],
+            'tribes' => [],
+            'triggers' => [],
+            'cardTypes' => [],
         ]);
     }
 
@@ -53,34 +73,49 @@ class Edit extends Component
 
         $this->filters = $this->filters->reject(fn ($i) => in_array($i, [null, '']));
 
-        $query = Card::query()
-            ->where(fn ($q) => $q->artifacts())
-            ->orWhere(fn ($q) => $q->dudes());
+        // Get the cards that you're allowed to use
+        $cards = CardCache::get();
+        $format = $this->deck->format;
 
-        $cards = $query
-            ->when($this->filters->get('set'), fn ($query, $set) => $query->whereHas('sets', fn ($query) => $query->where('id', $set)))
-            ->when($this->filters->get('keyword'), fn ($query, $keyword) => $query->where('keywords', 'LIKE', "%\"{$keyword}\"%"))
-            ->when($this->filters->get('tribe'), fn ($query, $tribe) => $query->where('tribes', 'LIKE', "%\"{$tribe}\"%"))
-            ->when($this->filters->get('effect'), fn ($query, $effect) => $query->where('effects', 'LIKE', "%\"{$effect}\"%"))
-            ->when($this->filters->get('target'), fn ($query, $target) => $query->where('effects', 'LIKE', "%\"{$target}\"%"))
-            ->when($this->filters->get('trigger'), fn ($query, $trigger) => $query->where('effects', 'LIKE', "%\"{$trigger}\"%"))
-            ->when(! is_null($this->filters->get('cost')), fn ($query) => $query->where('cost', $this->filters->get('cost')))
-            ->when(! is_null($this->filters->get('power')), fn ($query) => $query->where('power', $this->filters->get('power')))
-            ->when($this->filters->get('search'), function ($query, $search) {
-                $query->where('name', 'LIKE', "%{$search}%");
-            })
-            ->orderBy(...explode('-', $this->filters->get('sort')))
-            ->get();
+        if ($format === Format::WEEKLY) {
+            $cards = $cards->filter(fn (array $card) => in_array($card['id'], WeeklyPack::current()->cards));
+        }
+
+        // Set the allowed filters
+        $this->filterOptions = collect([
+            'sets' => Set::pluck('name', 'id')->sort(),
+            'keywords' => $cards->pluck('keywords')->flatten()->unique()->sort()->mapWithKeys(fn ($item) => [$item => Keyword::from($item)->getLabel()]),
+            'tribes' => $cards->pluck('tribes')->flatten()->unique()->sort()->mapWithKeys(fn ($item) => [$item => Tribe::from($item)->getLabel()]),
+            'cardTypes' => $cards->pluck('type')->unique()->sort()->mapWithKeys(fn ($item) => [$item => CardType::from($item)->getLabel()]),
+        ]);
+
+        $cards = $cards
+            ->reject(fn (array $card) => $card['type'] === CardType::TOKEN->value)
+            ->sortBy([
+                [...explode('-', $this->filters->get('sort'))],
+                ['name', 'asc'],
+            ])
+            ->when($this->filters->get('set'), fn ($collection, $set) => $collection->filter(fn ($card) => in_array($set, $card['sets'])))
+            ->when($this->filters->get('keyword'), fn ($collection, $keyword) => $collection->filter(fn ($card) => in_array($keyword, $card['keywords'])))
+            ->when($this->filters->get('tribe'), fn ($collection, $tribe) => $collection->filter(fn ($card) => in_array($tribe, $card['tribes'])))
+            ->when($this->filters->get('type'), fn ($collection, $type) => $collection->where('type', $type))
+            ->when(! is_null($this->filters->get('cost')), fn ($collection) => $collection->where('cost', $this->filters->get('cost')))
+            ->when(! is_null($this->filters->get('power')), fn ($collection) => $collection->where('power', $this->filters->get('power')))
+            ->when($this->filters->get('search'), function ($collection, $search) {
+                return $collection->filter(fn($card) => Str::contains(
+                    implode(' ', [$card['name'], $card['text'], $card['tribesText']]),
+                    $search,
+                    true
+                ));
+            });
 
         return view('livewire.decks.edit', [
-            'cards' => $cards,
-            'cardList' => $query->get()->mapWithKeys(fn (Card $card) => [$card->id => $card->toJavaScript()]),
-            'sets' => Set::latest()->pluck('name', 'id'),
-            'effects' => Enums\Effect::list(),
-            'keywords' => Enums\Keyword::list(),
-            'targets' => Enums\Target::list(),
-            'tribes' => Enums\Tribe::list(),
-            'triggers' => Enums\Trigger::list(),
+            'cards' => Card::find($cards->pluck('id')),
+            'cardList' => CardCache::get(),
+            'cardTypes' => $this->filterOptions->get('cardTypes'),
+            'sets' => $this->filterOptions->get('sets'),
+            'keywords' => $this->filterOptions->get('keywords'),
+            'tribes' => $this->filterOptions->get('tribes'),
             'sorting' => [
                 'cost-asc' => 'Cost (low to high)',
                 'cost-desc' => 'Cost (high to low)',
@@ -105,5 +140,12 @@ class Edit extends Component
         $this->deck->touch();
 
         $this->toast('Deck has been saved!');
+    }
+
+    public function resetFilters()
+    {
+        $this->filters = collect([
+            'sort' => 'cost-asc',
+        ]);
     }
 }

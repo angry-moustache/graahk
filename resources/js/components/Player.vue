@@ -1,11 +1,16 @@
 <template>
   <div
     class="flex flex-col gap-4 p-4 origin-center"
-    v-bind:class="{ 'flex-col-reverse': reverse }"
+    v-bind:class="{
+      'flex-col-reverse': reverse,
+    }"
   >
     <div
-        class="avatar w-full pt-[100%] rounded-lg bg-cover bg-center"
+        class="avatar w-full pt-[100%] rounded-lg bg-cover bg-center transition-all duration-300"
         v-bind:style="`background-image: url('${player.avatar}')`"
+        v-bind:class="{
+          'scale-105': player.glowing,
+        }"
     ></div>
 
     <!-- <div class="absolute opacity-50">

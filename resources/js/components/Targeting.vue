@@ -91,10 +91,18 @@ export default {
         this.aimer = target
 
         let effectTarget = this.aimer.effects
-          .find((e) => ['dude', 'dude_player', 'dude_opponent'].includes(e.target))
+          .find((e) => window.requiresTarget.includes(e.target))
           .target
 
         switch (effectTarget) {
+          case 'target_anything':
+            this.validTargets = [
+              this.$parent.game.player,
+              this.$parent.game.opponent,
+              ...this.$parent.game.player.board,
+              ...this.$parent.game.opponent.board,
+            ]
+            break
           case 'dude':
             this.validTargets = [
               ...this.$parent.game.player.board,
@@ -107,13 +115,19 @@ export default {
           case 'dude_opponent':
             this.validTargets = this.$parent.game.opponent.board
             break
+          case 'hand_target':
+            this.validTargets = this.$parent.game.player.hand
+            break
         }
 
+        // Might not be needed?
         if (['dude', 'dude_player', 'dude_opponent'].includes(effectTarget)) {
           this.validTargets = this.validTargets.filter((c) => c instanceof Dude)
         }
 
-        this.validTargets = this.validTargets.filter((c) => ! c.keywords.includes('ghostly'))
+        if (! ['hand_target'].includes(effectTarget)) {
+          // this.validTargets = this.validTargets.filter((c) => ! c instanceof Dude || ! c.keywords.includes('ghostly'))
+        }
 
         this.effect = (() => {
           let cardKey = this.$parent.game.player.hand.indexOf(this.aimer)
@@ -132,6 +146,11 @@ export default {
           clientX: $aimer.x + ($aimer.width / 2),
           clientY: $aimer.y + ($aimer.height / 2),
         })
+
+        // Make the validTargets glow
+        this.validTargets.forEach((t) => {
+          t.glowing = true
+        })
       }
     },
     setVictim (target) {
@@ -148,7 +167,6 @@ export default {
       // Do the thing
       this.victim = target
       this.effect()
-
       document.body.style.cursor = 'auto'
     },
     areTargeting () {
@@ -162,6 +180,12 @@ export default {
 
       this.victim = false
       this.effect = null
+
+      // Un-glow
+      this.validTargets.forEach((t) => {
+        t.glowing = false
+      })
+
       this.validTargets = []
 
       this.resetCanvas()

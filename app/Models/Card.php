@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use AngryMoustache\Media\Models\Attachment;
+use App\CardCache;
 use App\Enums\CardType;
 use App\Enums\Effect;
 use App\Enums\Keyword;
@@ -25,6 +26,7 @@ class Card extends Model
         'keywords',
         'masked_text',
         'enter_speed',
+        'entrance_animation',
     ];
 
     protected $casts = [
@@ -33,6 +35,7 @@ class Card extends Model
         'effects' => 'array',
         'keywords' => 'array',
         'enter_speed' => 'integer',
+        'entrance_animation' => 'array',
     ];
 
     public function attachment()
@@ -56,14 +59,19 @@ class Card extends Model
         return $query->where('type', CardType::DUDE);
     }
 
-    public function scopeArtifacts($query)
+    public function scopeRuses($query)
     {
-        return $query->where('type', CardType::ARTIFACT);
+        return $query->where('type', CardType::RUSE);
     }
 
     public function scopeTokens($query)
     {
         return $query->where('type', CardType::TOKEN);
+    }
+
+    public function scopeNoTokens($query)
+    {
+        return $query->where('type', '!=', CardType::TOKEN);
     }
 
     public function getTribes(): Collection
@@ -117,24 +125,29 @@ class Card extends Model
     {
         $user ??= auth()->user();
 
-        return [
+        $card = [
             'id' => $this->id,
             'uuid' => (string) Str::uuid(),
             'name' => $this->name,
             'image' => $this->attachment->path(),
             'cost' => $this->cost,
-            'originalCost' => $this->cost,
             'power' => $this->power,
-            'originalPower' => $this->power,
             'tribes' => $this->tribes,
             'tribesText' => $this->getTribes()->join(', '),
             'text' => $this->toText(),
             'keywords' => $this->keywords,
             'effects' => $this->effects,
-            'type' => $this->type,
+            'type' => $this->type?->value,
             'ready' => false,
             'enterSpeed' => $this->enter_speed,
+            'entranceAnimation' => $this->entrance_animation,
             'level' => $this->getLevel($user),
+            'sets' => $this->sets->pluck('id')->toArray(),
+        ];
+
+        return [
+            ...$card,
+            'original' => $card,
         ];
     }
 
@@ -159,6 +172,21 @@ class Card extends Model
 
         static::addGlobalScope('hasAttachment', function ($query) {
             $query->has('attachment');
+        });
+
+        static::saving(function (Card $card) {
+            if ($card->type === CardType::RUSE) {
+                $card->power = null;
+
+                if (! in_array(Tribe::RUSE->value, $card->tribes)) {
+                    $tribes = [Tribe::RUSE->value, ...$card->tribes];
+                    $card->tribes = $tribes;
+                }
+            }
+        });
+
+        static::saved(function () {
+            CardCache::flush();
         });
     }
 }

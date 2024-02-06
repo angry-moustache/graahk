@@ -6,6 +6,7 @@ import { HealAnimation } from './animations/HealAnimation'
 import { ActivatedAnimation } from './animations/ActivatedAnimation'
 import { Token } from './Token'
 import { Artifact } from './Artifact'
+import { CardHand } from './CardHand'
 
 export class Player {
   constructor (player) {
@@ -17,9 +18,19 @@ export class Player {
     this.power = player.power
     this.originalPower = player.originalPower
     this.energy = player.energy
-    this.hand = reactive(player.hand)
-    this.deck = reactive(player.deck)
-    this.graveyard = reactive(player.graveyard)
+
+    this.hand = reactive(player.hand.map((card) => {
+      return reactive(new CardHand(card))
+    }))
+
+    this.deck = reactive(player.deck.map((card) => {
+      return reactive(new CardHand(card))
+    }))
+
+    this.graveyard = reactive(player.graveyard.map((card) => {
+      return reactive(new CardHand(card))
+    }))
+
     this.board = reactive(player.board.map((card) => {
       if (card.type === 'artifact') {
         return reactive(new Artifact(card))
@@ -29,6 +40,7 @@ export class Player {
         return reactive(new Dude(card))
       }
     }))
+
     this.fatigue = player.fatigue || 0
     this.drawsThisTurn = player.drawsThisTurn || 0
 
@@ -158,6 +170,7 @@ export class Player {
 
   async draw_specific_tribe (data, source) {
     let uuids = this.deck
+      .filter((card) => card.tribes !== null)
       .filter((card) => card.tribes.includes(data.tribe))
       .map((card) => card.uuid)
 
@@ -210,6 +223,11 @@ export class Player {
   }
 
   async heal (data, source) {
+    if (window.game.isHealingReversed()) {
+      this.deal_damage(data, source)
+      return
+    }
+
     if (this.power < this.originalPower) {
       this.power = Math.min(
         this.power + window.game.getAmount(data, source),

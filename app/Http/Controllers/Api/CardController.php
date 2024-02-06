@@ -44,17 +44,25 @@ class CardController extends Controller
             ];
         }
 
-        collect($card->effects)->filter(fn ($e) => in_array($e['effect'], ['silence']))->each(function ($card) {
+        collect($card->effects)->filter(fn ($e) => in_array($e['effect'], ['silence']))->each(function () {
             $this->extras['silence'] = [
-                'name' => 'Silence',
-                'text' => 'A silenced dude will lose all effects and keywords'
+                'name' => 'Stifle',
+                'text' => 'A stifled dude will lose all effects and keywords'
             ];
         });
 
-        collect($card->effects)->filter(fn ($e) => in_array($e['effect'], ['stun']))->each(function ($card) {
+        collect($card->effects)->filter(fn ($e) => in_array($e['effect'], ['stun']))->each(function () {
             $this->extras['stun'] = [
                 'name' => 'Stun',
                 'text' => 'A stunned dude will not be able to attack next turn'
+            ];
+        });
+
+        collect($card->effects)->filter(fn ($e) => in_array($e['effect'], ['give_keyword']))->each(function ($effect) {
+            $keyword = Keyword::from($effect['keyword']);
+            $this->extras[$keyword->value] = [
+                'name' => $keyword->toText(),
+                'text' => $keyword->description(),
             ];
         });
 
@@ -68,8 +76,6 @@ class CardController extends Controller
                 return;
             }
 
-            $this->getExtras($card);
-
             $this->extras[$card->id] = [
                 'name' => $card->name,
                 'text' => $card->toText(),
@@ -77,6 +83,10 @@ class CardController extends Controller
                 'cost' => $card->cost,
                 'power' => $card->power,
             ];
+
+            if (! isset($this->extras[$card->id])) {
+                $this->getExtras($card);
+            }
         });
     }
 }

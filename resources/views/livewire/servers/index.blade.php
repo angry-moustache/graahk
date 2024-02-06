@@ -16,15 +16,17 @@
                         />
                     @endif
 
-                    <div class="flex flex-col justify-center pl-4">
+                    <div class="flex flex-col justify-center pl-4 gap-1">
                         <span class="text-lg font-bold">
                             {{ $game->name }}
                         </span>
 
-                        <span class="opacity-50 text-sm">
-                            {{ $game->user1->username }}
-                            vs {{ $game->user2->username ?? '???' }}
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <x-format-icon :format="$game->format()" size="sm" />
+                            <p class="opacity-50">
+                                {{ $game->format()?->name() }}
+                            </p>
+                        </div>
                     </div>
 
                     <div class="grow"></div>

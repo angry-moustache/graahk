@@ -19,6 +19,7 @@ enum Target: string implements HasLabel
     case DUDE = 'dude';
     case DUDE_PLAYER = 'dude_player';
     case DUDE_OPPONENT = 'dude_opponent';
+    case TARGET_ANYTHING = 'target_anything';
 
     // Area of effect
     case ALL_PLAYER_DUDES = 'all_player_dudes';
@@ -36,6 +37,13 @@ enum Target: string implements HasLabel
     case ALL_PLAYER_TRIBE_BUT_SELF = 'all_player_tribe_but_self';
     case ALL_OPPONENT_TRIBE = 'all_opponent_tribe';
 
+    // Hand
+    case HAND_ALL = 'hand_all';
+    case HAND_TARGET = 'hand_target';
+
+    // Others
+    case SOURCE = 'source';
+
     // Self
     case ITSELF = 'itself';
 
@@ -47,6 +55,7 @@ enum Target: string implements HasLabel
             self::DUDE => 'Target dude',
             self::DUDE_PLAYER => 'Target dude (player)',
             self::DUDE_OPPONENT => 'Target dude (opponent)',
+            self::TARGET_ANYTHING => 'Target (player or dude)',
             self::ALL_PLAYERS => 'All players',
             self::ALL_PLAYER_DUDES => 'All player dudes',
             self::ALL_OTHER_PLAYER_DUDES => 'All player dudes except itself',
@@ -60,6 +69,9 @@ enum Target: string implements HasLabel
             self::ALL_PLAYER_TRIBE => 'All player tribe',
             self::ALL_PLAYER_TRIBE_BUT_SELF => 'All player tribe but self',
             self::ALL_OPPONENT_TRIBE => 'All opponent tribe',
+            self::HAND_ALL => 'Hand (all)',
+            self::HAND_TARGET => 'Hand (target)',
+            self::SOURCE => 'Source (the card that was targeted)',
         };
     }
 
@@ -71,8 +83,9 @@ enum Target: string implements HasLabel
             self::PLAYER => 'you',
             self::OPPONENT => 'your opponent',
             self::DUDE => 'target dude',
-            self::DUDE_PLAYER => 'a dude you control',
-            self::DUDE_OPPONENT => 'a dude your opponent controls',
+            self::DUDE_PLAYER => 'target dude you control',
+            self::DUDE_OPPONENT => 'target dude your opponent controls',
+            self::TARGET_ANYTHING => 'target dude or player',
             self::ALL_PLAYERS => 'all players',
             self::ALL_PLAYER_DUDES => 'all dudes you control',
             self::ALL_OTHER_PLAYER_DUDES => 'all other dudes you control',
@@ -86,6 +99,9 @@ enum Target: string implements HasLabel
             self::ALL_PLAYER_TRIBE => "all <i>{$tribe}</i> dudes you control",
             self::ALL_PLAYER_TRIBE_BUT_SELF => "all <i>{$tribe}</i> dudes you control except this",
             self::ALL_OPPONENT_TRIBE => "all <i>{$tribe}</i> dudes your opponent controls",
+            self::HAND_ALL => 'all cards in your hand',
+            self::HAND_TARGET => 'target card in your hand',
+            self::SOURCE => 'that dude',
         };
     }
 
@@ -95,6 +111,7 @@ enum Target: string implements HasLabel
             self::ALL_TRIBE,
             self::ALL_TRIBE_BUT_SELF,
             self::ALL_PLAYER_TRIBE,
+            self::ALL_PLAYER_TRIBE_BUT_SELF,
             self::ALL_OPPONENT_TRIBE => [
                 Select::make('target_tribe')
                     ->options(Tribe::class)

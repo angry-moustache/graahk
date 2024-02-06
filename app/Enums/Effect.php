@@ -37,6 +37,8 @@ enum Effect: string implements HasLabel
     case SHUFFLE_INTO_OPPONENT_DECK = 'shuffle_into_opponents_deck';
     case UNNAMED_ONE = 'unnamed_one';
     case GIVE_KEYWORD = 'give_keyword';
+    case REDUCE_COST = 'reduce_cost';
+    case ADD_MAXIMUM_POWER = 'add_maximum_power';
 
     // Artifact effects
     case GAIN_CHARGE = 'gain_charge';
@@ -59,12 +61,14 @@ enum Effect: string implements HasLabel
             self::DRAW_SPECIFIC_TRIBE => 'Draw specific card (tribe)',
             self::DRAW_SPECIFIC_DUDE => 'Draw specific card (dude)',
             self::BOUNCE => 'Bounce',
-            self::SILENCE => 'Silence',
+            self::SILENCE => 'Stifle',
             self::READY_DUDE => 'Ready dude',
             self::SHUFFLE_INTO_DECK => 'Shuffle into deck',
             self::SHUFFLE_INTO_OPPONENT_DECK => 'Shuffle into opponent\'s deck',
             self::UNNAMED_ONE => 'Unnamed one effect',
             self::GIVE_KEYWORD => 'Give keyword',
+            self::REDUCE_COST => 'Reduce card cost',
+            self::ADD_MAXIMUM_POWER => 'Add maximum power',
 
             // Artifact effects
             self::GAIN_CHARGE => 'Gain charge',
@@ -156,7 +160,12 @@ enum Effect: string implements HasLabel
         if (isset($parameters['amount'])) {
             if ($parameters['amount'] === 'X') {
                 $parameters['amount'] = $parameters['amount_multiplier'];
-                $amountExtra = Amount::tryFrom($parameters['amount_special'])?->toText();
+                $amount = Amount::tryFrom($parameters['amount_special']);
+                $amountExtra = $amount?->toText();
+
+                if ($amount?->hasYField()) {
+                    $amountExtra = Str::replace('{Y}', $parameters['amount_y'], $amountExtra);
+                }
             } else {
                 $parameters['amount'] = $parameters['amount'];
             }
@@ -192,8 +201,9 @@ enum Effect: string implements HasLabel
                 Target::from($parameters['target']) === Target::OPPONENT ? 'for your opponent' : '',
             ],
             self::BUFF_DUDE => [
+                'give',
                 $target,
-                "gain {$parameters['amount']} power",
+                "{$parameters['amount']} extra power",
                 $amountExtra,
             ],
             self::HEAL => [
@@ -253,7 +263,7 @@ enum Effect: string implements HasLabel
                 Card::find($parameters['dude'])->name,
             ],
             self::SILENCE => [
-                'silence',
+                'stifle',
                 $target,
             ],
             self::UNNAMED_ONE =>[
@@ -283,6 +293,25 @@ enum Effect: string implements HasLabel
                 $parameters['amount'],
                 Str::plural('charge', $parameters['amount']),
                 $amountExtra,
+            ],
+            self::GIVE_KEYWORD => [
+                'give',
+                $target,
+                '<strong>' . Keyword::from($parameters['keyword'])->toText() . '</strong>',
+            ],
+            self::REDUCE_COST => [
+                'reduce the cost of',
+                $target,
+                'by',
+                $parameters['amount'],
+                $amountExtra,
+            ],
+            self::ADD_MAXIMUM_POWER => [
+                $target,
+                'gain',
+                $parameters['amount'],
+                $amountExtra,
+                'maximum power',
             ],
         })
             ->filter()

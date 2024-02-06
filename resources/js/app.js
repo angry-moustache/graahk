@@ -26,6 +26,8 @@ window.requiresTarget = [
   'dude',
   'dude_player',
   'dude_opponent',
+  'hand_target',
+  'target_anything',
 ]
 
 document.addEventListener('DOMContentLoaded', () => {

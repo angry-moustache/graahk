@@ -3,10 +3,15 @@
     class="w-full h-screen fixed inset-0 items-center justify-center flex gap-4 bg-black bg-opacity-75 game-finished"
     style="z-index: 1000000"
   >
-    <TransitionGroup name="steps" class="flex gap-4 justify-center align-stretch game-finished-content w-full">
+    <TransitionGroup
+      class="relative flex gap-4 justify-center align-stretch game-finished-content w-full h-[60vh]"
+      name="steps"
+      tag="div"
+    >
       <div
-        class="bg-background p-8 w-1/3 rounded-lg flex flex-col gap-2 items-center"
+        class="bg-background p-8 w-1/3 rounded-lg flex flex-col justify-between items-center h-[60vh] absolute top-0"
         v-if="step === 1"
+        v-bind:key="1"
       >
         <div v-if="won" class="w-64 h-64 relative">
           <div
@@ -30,22 +35,26 @@
           </div>
         </div>
 
-        <h1 v-text="won ? 'Victory!' : 'Defeat...'" class="text-4xl font-bold uppercase mt-8" />
-        <p v-text="won ? 'Truly a glorious battle!' : 'There\'s always next time!'"/>
+        <div class="flex flex-col gap-4 items-center">
+          <h1 v-text="won ? 'Victory!' : 'Defeat...'" class="text-4xl font-bold uppercase mt-8" />
+          <p v-text="won ? 'Truly a glorious battle!' : 'There\'s always next time!'"/>
+        </div>
 
         <button
-          v-on:click="next()"
-          v-text="won ? 'Huzzah!' : 'Next time...!'"
-          class="
-            block rounded px-6 py-3 font-bold text-xl text-surface mt-8
-            bg-green-500 hover:bg-green-600 cursor-pointer
-          "
+          v-on:click="receivedData ? next() : null"
+          v-text="won ? 'Huzzah!' : 'Oh bugger..'"
+          class="block rounded px-6 py-3 font-bold text-xl text-surface mt-8"
+          v-bind:class="{
+            'bg-green-500 hover:bg-green-600 cursor-pointer': receivedData,
+            'bg-gray-500 cursor-wait': ! receivedData,
+          }"
         ></button>
       </div>
 
       <div
-        class="bg-background p-8 w-1/3 rounded-lg flex flex-col gap-12 items-center"
+        class="bg-background p-8 w-1/3 rounded-lg flex flex-col justify-between items-center h-[60vh] absolute top-0"
         v-if="step === 2"
+        v-bind:key="2"
       >
         <template v-if="game.afterGameUpgrades[$parent.playerId]">
           <div class="flex flex-col items-center">
@@ -90,24 +99,17 @@ export default {
   components: {
     Card,
   },
-  props: {
-    game: Object,
-  },
   data () {
     return {
       won: null,
       step: 1,
+      game: window.game,
+      receivedData: false,
     }
   },
   async mounted () {
     this.won = (this.game.player.power > 0)
-
-    window.axios.put(`/api/games/${this.game.gameId}/finish`, {
-      players: [
-        { id: this.game.player.id, power: this.game.player.power },
-        { id: this.game.opponent.id, power: this.game.opponent.power },
-      ],
-    })
+    this.receivedData = this.game.afterGameUpgrades[this.$parent.playerId] !== undefined
   },
   methods: {
     next () {
@@ -116,6 +118,9 @@ export default {
       }
 
       this.step++
+    },
+    dataReceived () {
+      this.receivedData = true
     },
   },
 }

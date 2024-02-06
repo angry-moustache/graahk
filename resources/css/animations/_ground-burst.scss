@@ -1,0 +1,29 @@
+.animate-ground-burst {
+    animation: ground-burst 2s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    z-index: 1000;
+}
+
+// Bursting
+@keyframes ground-burst {
+    0% {
+        opacity: 0;
+    }
+    25% {
+        opacity: 0;
+        transform: scale(0, 0);
+    }
+    40% {
+        opacity: 1;
+        transform: scale(1.5, 2);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.5, 2);
+    }
+    70% {
+        transform: scale(1, 1);
+    }
+}

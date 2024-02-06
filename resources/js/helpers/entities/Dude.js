@@ -28,18 +28,21 @@ export class Dude {
   }
 
   async reset () {
-    this.power = this.originalPower
-    this.ready = false
-    this.dead = false
-    this.debuffs = []
+    Object.entries(this.original).forEach(([key, value]) => {
+      this[key] = value
+    })
   }
 
   async reset_health () {
-    this.power = this.originalPower
+    this.power = this.original.power
 
     await new ActivatedAnimation({ target: this }).resolve(null, () => {
       window.nextJob()
     })
+  }
+
+  async reduce_cost (data) {
+
   }
 
   async silence () {
@@ -66,7 +69,7 @@ export class Dude {
 
     if (this.power <= 0) {
       this.dead = ! this.keywords.includes('tireless')
-      this.power = 0
+      // this.power = 0 // why?
     }
 
     if (! this.dead) {
@@ -81,12 +84,32 @@ export class Dude {
   }
 
   async heal (data, source) {
-    if (this.power < this.originalPower && ! this.dead) {
+    if (window.game.isHealingReversed()) {
+      this.deal_damage(data, source)
+      return
+    }
+
+    if (this.power < this.original.power && ! this.dead) {
       this.power = Math.min(
         this.power + window.game.getAmount(data, source),
-        this.originalPower
+        this.original.power
       )
+
+      game.checkTriggers('healed', [this])
+      game.checkTriggers('dude_heals_another', false, [this], true)
+
+      if (this.power >= this.original.power) {
+        game.checkTriggers('dude_fully_healed', [this])
+      }
     }
+
+    await new HealAnimation({ target: this }).resolve(null, () => {
+      window.nextJob()
+    })
+  }
+
+  async add_maximum_power (data) {
+    this.original.power += window.game.getAmount(data, this)
 
     await new HealAnimation({ target: this }).resolve(null, () => {
       window.nextJob()
@@ -167,6 +190,7 @@ export class Dude {
 
     // Turn it into a normal object
     this.highlighted = false
+    this.keywords = this.original.keywords
     player.hand.push(JSON.parse(JSON.stringify(this)))
 
     window.nextJob()
@@ -193,6 +217,20 @@ export class Dude {
       opponent.shuffle()
       window.nextJob()
     })
+  }
+
+  async give_keyword (data, source) {
+    if (! this.keywords.includes(data.keyword)) {
+      this.keywords.push(data.keyword)
+
+      if (data.keyword === 'rush') this.ready = true
+      if (data.keyword === 'scenery') this.ready = false
+    }
+
+    new ActivatedAnimation({ target: source }).resolve()
+    new ActivatedAnimation({ target: this }).resolve()
+
+    window.nextJob()
   }
 
   async unnamed_one () {

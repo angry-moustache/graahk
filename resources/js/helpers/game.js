@@ -9,15 +9,17 @@ import { HandleAnimation } from './entities/animations/HandleAnimation'
 import { reactive } from 'vue'
 import { Surrender } from './events/Surrender'
 import { ExpGain } from './events/ExpGain'
+import { PlayRuse } from './events/PlayRuse'
 
 export class Game {
   constructor (_vue) {
     this._vue = _vue
     this.gameId = _vue.gameId
     this.pusher = window.pusher.subscribe(this.gameId)
+    this.eventFired = false
 
     this.completed = _vue.gameState.completed || false
-    this.afterGameUpgrades = _vue.gameState.afterGameUpgrades || []
+    this.afterGameUpgrades = reactive(_vue.gameState.afterGameUpgrades || [])
 
     this.player = reactive(new Player(_vue.gameState.player))
     this.opponent = reactive(new Player(_vue.gameState.opponent))
@@ -31,11 +33,14 @@ export class Game {
         case 'mulliganed': (new Mulliganed).resolve(this, data); break
         case 'end_turn': (new SwapTurn).resolve(this, data); break
         case 'play_dude': (new PlayDude).resolve(this, data); break
+        case 'play_ruse': (new PlayRuse).resolve(this, data); break
         case 'attack': (new Attack).resolve(this, data); break
         case 'surrender': (new Surrender).resolve(this, data); break
         case 'exp_gain': (new ExpGain).resolve(this, data); break
         default: window.errorToast(`No trigger for ${data.event}`); break
       }
+
+      this.eventFired = false
     })
   }
 
@@ -45,7 +50,10 @@ export class Game {
 
   // Post an event to the server
   event (event, data = {}) {
+    if (this.eventFired) return
+
     window.axios.post(`/api/games/${this.gameId}/event`, { event: event, data: data })
+    this.eventFired = true
   }
 
   getTargets (type, owner, target = null, data = []) {
@@ -67,6 +75,7 @@ export class Game {
       case 'dude': targets = [this._vue.getTarget()]; break
       case 'dude_player': targets = [this._vue.getTarget()]; break
       case 'dude_opponent': targets = [this._vue.getTarget()]; break
+      case 'target_anything': targets = [this._vue.getTarget()]; break
       case 'all_players': targets = [player, opponent]; break
       case 'all_player_dudes': targets = player.board; break
       case 'all_other_player_dudes': targets = player.board.filter((c) => c.uuid !== owner.uuid); break
@@ -75,12 +84,15 @@ export class Game {
       case 'all_other_dudes': targets = [...player.board, ...opponent.board].filter((c) => c.uuid !== owner.uuid); break
       case 'everything': targets = [...player.board, ...opponent.board, player, opponent]; break
       case 'itself': targets = [owner]; break
-      case 'from_uuid': targets = [...player.board, ...opponent.board, player, opponent].filter((c) => c.uuid === target); break
+      case 'from_uuid': targets = [...player.board, ...opponent.board, player, opponent, ...player.hand].filter((c) => c.uuid === target); break
       case 'all_tribe': targets = [...player.board, ...opponent.board].filter((c) => c.tribes.includes(data.target_tribe)); break
       case 'all_tribe_but_self': targets = [...player.board, ...opponent.board].filter((c) => c.tribes.includes(data.target_tribe) && c.uuid !== owner.uuid); break
       case 'all_player_tribe': targets = player.board.filter((c) => c.tribes.includes(data.target_tribe)); break
       case 'all_player_tribe_but_self': targets = player.board.filter((c) => c.tribes.includes(data.target_tribe) && c.uuid !== owner.uuid); break
       case 'all_opponent_tribe': targets = opponent.board.filter((c) => c.tribes.includes(data.target_tribe)); break
+      case 'hand_all': targets = player.hand; break
+      case 'hand_target': targets = [this._vue.getTarget()]; break
+      case 'source': targets = [owner]; break
       default: window.errorToast(`No target type ${type}`);
     }
 
@@ -118,6 +130,7 @@ export class Game {
       case 'for_each_dude': amount = (playerCount + opponentCount) * multiplier; break
       case 'for_each_energy_player': amount = player.energy * multiplier; break
       case 'for_each_energy_opponent': amount = opponent.energy * multiplier; break
+      case 'for_each_y_power': amount = Math.floor(source.power / data.amount_y) * multiplier; break
       default: window.errorToast(`No amount special type ${type}`);
     }
 
@@ -126,14 +139,14 @@ export class Game {
 
   // Check for any triggers after an effect or event has fired
   // This only pushes to the queue, it doesn't actually run the effect yet
-  async checkTriggers (trigger, checks = false, targetedTargets = false) {
+  async checkTriggers (trigger, checks = false, targetedTargets = false, usingTarget = false) {
     window.game._vue.queue(() => {
       let targets
       (checks || this.getTargets('all_dudes')).forEach((dude) => {
         dude.effects.filter((e) => e.trigger === trigger).reverse().forEach(async (effect) => {
           // Only use targeted targets if it uses them
           targets = null
-          if (window.requiresTarget.includes(effect.target)) {
+          if (usingTarget || window.requiresTarget.includes(effect.target)) {
             targets = targetedTargets
           }
 
@@ -161,8 +174,8 @@ export class Game {
       await new HandleAnimation(targets, effect, data, source).resolve(() => {
         targets.forEach(async (target) => {
           if (target[effect] === undefined) {
-            // return window.errorToast(`No effect ${effect} on ${target.uuid}`)
-            return window.nextJob()
+            window.nextJob();
+            return window.errorToast(`No effect ${effect} on ${target.uuid}`)
           }
 
           await target[effect](data, source)
@@ -172,6 +185,8 @@ export class Game {
   }
 
   cleanup () {
+    this._vue.$refs.targeting.stopTargeting()
+
     let playerList = this.currentPlayer.causalityList()
     playerList.forEach((death) => {
       if (death.type === 'dude') {
@@ -194,7 +209,6 @@ export class Game {
       this.checkTriggers('leave_field', [death])
     })
 
-    this._vue.$refs.targeting.stopTargeting()
     this.updateGameState()
 
     if (playerList.length <= 0 && opponentList.length <= 0) {
@@ -215,12 +229,26 @@ export class Game {
     })
   }
 
+  isHealingReversed () {
+    return [...this.player.board, ...this.opponent.board].some((dude) =>
+      dude.effects.some((effect) => effect.trigger === 'healing_reversed')
+    )
+  }
+
   checkGameOver () {
     if (this.player.power > 0 && this.opponent.power > 0) return
 
     this._vue.queue(() => {
-      window.game.completed = true
-      window.game._vue.gameCompleted = true
+      this.completed = true
+      this._vue.gameCompleted = true
+
+      window.axios.put(`/api/games/${this.gameId}/finish`, {
+        players: [
+          { id: this.player.id, power: this.player.power },
+          { id: this.opponent.id, power: this.opponent.power },
+        ],
+      })
+
       this.updateGameState()
     }, 'end')
   }
@@ -233,7 +261,13 @@ export class Game {
     if (card.cost > this.player.energy) return
 
     data.card = card
-    this.event('play_dude', data)
+    data.key = key
+
+    if (card.type === 'dude' || card.type === 'token') {
+      this.event('play_dude', data)
+    } else if (card.type === 'ruse') {
+      this.event('play_ruse', data)
+    }
   }
 
   areCurrentPlayer () {

@@ -31,9 +31,9 @@ export class Queue {
     if (this.queue.length === 0 && this.amount === 0) {
       this.isProcessing = false
 
-      window.cleanupTimer = setTimeout(() => {
+      window.cleanupTimer = window.setTimeout(() => {
         window.game.cleanup()
-      }, 500)
+      }, 100)
 
       return
     } else {
@@ -44,6 +44,7 @@ export class Queue {
 
     // Used to call the next job in the queue
     window.nextJob = (() => {
+      window.resizeCards()
       this.amount = Math.max(0, this.amount - 1)
 
       if (window.game.completed) return

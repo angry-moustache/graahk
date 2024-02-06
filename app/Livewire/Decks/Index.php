@@ -14,6 +14,14 @@ class Index extends Component
     {
         app('site')->title('Decks');
 
+        // Remove empty decks
+        Deck::where('user_id', auth()->id())->get()
+            ->each(function ($deck) {
+                if (collect($deck->cards)->isEmpty()) {
+                    $deck->delete();
+                }
+            });
+
         $this->decks = Deck::latest('updated_at')
             ->where('user_id', auth()->id())
             ->get();
@@ -22,15 +30,5 @@ class Index extends Component
     public function render()
     {
         return view('livewire.decks.index');
-    }
-
-    public function newDeck()
-    {
-        $deck = Deck::create([
-            'name' => 'New Deck',
-            'user_id' => auth()->id(),
-        ]);
-
-        return redirect()->route('deck.edit', $deck);
     }
 }

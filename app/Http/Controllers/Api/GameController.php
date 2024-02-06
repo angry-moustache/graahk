@@ -42,25 +42,23 @@ class GameController extends Controller
                 ->where('card_id', $card->id)
                 ->first();
 
-            if ($experience) {
-                DB::table('experience')
-                    ->where('user_id', $owner)
-                    ->where('card_id', $card->id)
-                    ->update([
-                        'experience' => $experience->experience + 1000,
-                    ]);
-            } else {
-                DB::table('experience')
-                    ->insert([
-                        'user_id' => $owner,
-                        'card_id' => $card->id,
-                        'experience' => 1000,
-                    ]);
+            // Pick another random card if the user already has this card at maxed level
+            if ($experience && $experience->experience >= 3000) {
+                $cards = DB::table('experience')->where('user_id', $owner)->pluck('card_id');
+                $card = Card::noTokens()->whereNotIn('id', $cards)->get()->shuffle()->first();
+
+                $card ??= Card::noTokens()->get()->shuffle()->first();
+                $experience = null;
             }
 
-            return [
-                $owner => $card->toJavaScript(User::find($owner))
-            ];
+            DB::table('experience')->updateOrInsert([
+                'user_id' => $owner,
+                'card_id' => $card->id,
+            ], [
+                'experience' => ($experience?->experience ?? 0) + 1000,
+            ]);
+
+            return [$owner => $card->toJavaScript(User::find($owner))];
         });
 
         EmitEvent::dispatch($game, 'exp_gain', $gains->toArray());

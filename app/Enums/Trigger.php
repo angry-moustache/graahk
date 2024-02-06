@@ -11,6 +11,7 @@ enum Trigger: string implements HasLabel
 
     case ENTER_FIELD = 'enter_field';
     case LEAVE_FIELD = 'leave_field';
+    case CAST_RUSE = 'cast_ruse';
 
     case START_TURN = 'start_turn';
     case END_TURN = 'end_turn';
@@ -34,13 +35,18 @@ enum Trigger: string implements HasLabel
     case DRAW_CARD = 'draw_card';
     case DRAW_SECOND_CARD = 'draw_second_card';
 
-    case ACTIVATE_ARTIFACT = 'activate_artifact';
+    case DUDE_HEALS_ANOTHER = 'dude_heals_another';
+    case HEALED = 'healed';
+    case DUDE_FULLY_HEALED = 'dude_fully_healed';
+
+    case HEALING_REVERSED = 'healing_reversed';
 
     public function getLabel(): ?string
     {
         return match ($this) {
             self::ENTER_FIELD => 'Enters the field',
             self::LEAVE_FIELD => 'Leaves the field',
+            self::CAST_RUSE => 'Cast ruse',
             self::START_TURN => 'Start of turn',
             self::END_TURN => 'End of turn',
             self::GAIN_ENERGY => 'Gain energy',
@@ -57,8 +63,10 @@ enum Trigger: string implements HasLabel
             self::OPPONENT_DUDE_DIES => 'Dude your opponent controls dies',
             self::DRAW_CARD => 'After drawing a card',
             self::DRAW_SECOND_CARD => 'After drawing a card after your first',
-
-            self::ACTIVATE_ARTIFACT => 'Activate artifact',
+            self::DUDE_HEALS_ANOTHER => 'Dude heals another',
+            self::HEALED => 'Healed',
+            self::HEALING_REVERSED => 'Healing reversed (has no effect dropdown)',
+            self::DUDE_FULLY_HEALED => 'Healed to full',
         };
     }
 
@@ -67,6 +75,7 @@ enum Trigger: string implements HasLabel
         return match ($this) {
             self::ENTER_FIELD => 'When this dude enters the field,',
             self::LEAVE_FIELD => 'When this dude dies,',
+            self::CAST_RUSE => 'When played,',
             self::START_TURN => 'At the start of your turn,',
             self::END_TURN => 'At the end of your turn,',
             self::GAIN_ENERGY => 'When you gain energy,',
@@ -83,8 +92,18 @@ enum Trigger: string implements HasLabel
             self::OPPONENT_DUDE_DIES => 'When a dude your opponent controls dies,',
             self::DRAW_CARD => 'After you draw a card,',
             self::DRAW_SECOND_CARD => 'After you draw a card after your first,',
+            self::DUDE_HEALS_ANOTHER => 'Whenever a dude is healed,',
+            self::HEALED => 'When this dude is healed,',
+            self::HEALING_REVERSED => 'Whenever something would heal, it deals that much damage instead',
+            self::DUDE_FULLY_HEALED => 'When this dude is fully healed,',
+        };
+    }
 
-            self::ACTIVATE_ARTIFACT => 'When you activate this artifact,',
+    public function hasEffectDropdown(): bool
+    {
+        return match ($this) {
+            self::HEALING_REVERSED => false,
+            default => true,
         };
     }
 }

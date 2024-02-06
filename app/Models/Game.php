@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\Format;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 
 class Game extends Model
 {
@@ -48,5 +50,10 @@ class Game extends Model
     public function route(): string
     {
         return route('game.play', $this);
+    }
+
+    public function format(): Format
+    {
+        return Deck::find(Arr::first($this->data['decks']))->format;
     }
 }

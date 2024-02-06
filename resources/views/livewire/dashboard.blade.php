@@ -32,9 +32,15 @@
                     @foreach ($sets as $set)
                         <div
                             x-on:click="$wire.setSet({{ $set->id }})"
-                            class="aspect-[2.5/3.5] bg-cover bg-center rounded-xl"
+                            class="relative overflow-hidden aspect-[2.5/3.5] bg-cover bg-center rounded-xl hover:scale-105 transition-all duration-200 cursor-pointer"
                             style="background-image: url('{{ $set->attachment->path() }}')"
-                        ></div>
+                        >
+                            @if ($set->beta)
+                                <div class="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-4 py-1 rounded-bl-xl">
+                                    BETA SET
+                                </div>
+                            @endif
+                        </div>
                     @endforeach
                 </div>
 
@@ -53,19 +59,32 @@
             </div>
         </div>
 
+        @if ($highlighted)
+            <div class="z-10 absolute inset-0 bg-black bg-opacity-75 flex justify-center cursor-pointer"
+                        x-on:click="$wire.setHighlighted(null)">
+                <div class="aspect-[2.5/3.5] p-8">
+                    <x-card
+                        :card="$highlighted"
+                        :level="$level"
+                        full-sized
+                    />
+                </div>
+            </div>
+        @endif
+
         @if ($currentSet)
             <div class="flex flex-col gap-6">
                 <div class="flex flex-col gap-2">
                     <x-headers.h2 :label="$currentSet->name" />
 
                     <p class="opacity-50">
-                        Contains {{ $currentSet->cards()->dudes()->count() }} cards
+                        Contains {{ $currentSet->cards()->noTokens()->count() }} cards
                     </p>
                 </div>
 
-                <div class="grid grid-cols-6 gap-4">
-                    @foreach ($currentSet->cards()->dudes()->get() as $card)
-                        <x-card :$card :level="$level" />
+                <div class="grid grid-cols-6 gap-4 cursor-pointer">
+                    @foreach ($currentSet->cards()->noTokens()->get() as $card)
+                        <x-card :$card :level="$level" x-on:click="$wire.setHighlighted({{ $card->id }})" />
                     @endforeach
                 </div>
             </div>

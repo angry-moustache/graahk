@@ -21,7 +21,12 @@
     ></div>
 
     <div class="flex flex-col grow items-center gap-1">
-        <x-headers.h3 class="text-xl" :label="$deck->name" />
+        <x-headers.h3 class="text-xl gap-2">
+            <x-format-icon :format="$deck->format" />
+
+            {{ $deck->name }}
+        </x-headers.h3>
+
         <p class="opacity-50 text-sm">
             {{ $deck->mainCard?->name ?? $deck->created_at?->isoFormat('MMM Do, YYYY') }}
         </p>

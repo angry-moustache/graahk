@@ -6,6 +6,8 @@
         <title>{{ app('site')->getTitle() }}</title>
         <link rel="icon" href="{{ asset('images/icon.jpg') }}" type="image/x-icon" />
         @vite(['resources/css/app.scss'])
+        <script src="https://unpkg.com/@nextapps-be/livewire-sortablejs@0.4.0/dist/livewire-sortable.js"></script>
+
     </head>
 
     <body class="bg-background text-text">

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use AngryMoustache\Media\Models\Attachment;
+use App\Enums\Format;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -11,11 +12,13 @@ class Deck extends Model
     protected $fillable = [
         'name',
         'user_id',
+        'format',
         'main_card_id',
         'cards',
     ];
 
     protected $casts = [
+        'format' => Format::class,
         'cards' => 'array',
     ];
 

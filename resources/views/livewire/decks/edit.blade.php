@@ -15,7 +15,7 @@
                 } else {
                     this.deckList.push({
                         amount: 1,
-                        card: this.cardList[id],
+                        card: this.cardList.find((card) => card.id === id),
                     })
                 }
             },
@@ -41,11 +41,15 @@
             wire:ignore
             class="w-[30rem] h-screen flex flex-col gap-4 py-8"
         >
-            <x-form.input
-                class="w-full"
-                label="Deck name"
-                wire:model="name"
-            />
+            <div class="flex gap-2 w-full items-end">
+                <x-form.input
+                    class="grow"
+                    label="Deck name"
+                    wire:model="name"
+                />
+
+                <x-format-icon :format="$deck->format" size="lg" />
+            </div>
 
             <div class="
                 w-full h-screen flex flex-col gap-2
@@ -54,11 +58,32 @@
                 <p
                     class="text-lg px-2"
                     x-bind:class="{ 'text-red-500': deckList.reduce((a, c) => a + c.amount, 0) !== 30 }"
+                    x-show="deckList.length > 0"
+                    x-cloak
                 >
                     Contains <span x-text="deckList.reduce((a, c) => a + c.amount, 0)"></span>/30 cards
                 </p>
 
                 <div class="flex flex-col gap-2">
+                    <template x-if="deckList.length === 0">
+                        <div class="flex flex-col items-center gap-8 mt-24">
+                            <img
+                                class="w-2/3 opacity-25"
+                                src="{{ asset('images/need_help.png') }}"
+                            />
+
+                            <div class="flex flex-col gap-2 items-center">
+                                <h3 class="font-bold text-3xl">HELP</h3>
+                                <p>Don't know how to get started?</p>
+                            </div>
+
+                            <x-form.button-secondary
+                                label="Help me, Jack!"
+                                x-on:click="window.location.href = '{{ route('deck-helper.index') }}'"
+                            />
+                        </div>
+                    </template>
+
                     <template x-for="card in getDeckList()">
                         <div
                             class="has-tooltip flex gap-2 items-center relative cursor-pointer"
@@ -122,16 +147,27 @@
             {{-- Filters --}}
             <div class="flex flex-col gap-4">
                 <div class="flex gap-4">
-                    <x-form.input
-                        label="Search by name"
-                        wire:model.debounce.live="filters.search"
-                    />
+                    <div class="w-1/2">
+                        <x-form.input
+                            label="Search by name or text"
+                            wire:model.debounce.live="filters.search"
+                        />
+                    </div>
 
-                    <x-form.select
-                        label="Sorting"
-                        wire:model.live="filters.sort"
-                        :options="$sorting"
-                    />
+                    <div class="w-1/2 flex gap-4">
+                        <x-form.select
+                            label="Card type"
+                            wire:model.live="filters.type"
+                            :options="$cardTypes"
+                            nullable
+                        />
+
+                        <x-form.select
+                            label="Sorting"
+                            wire:model.live="filters.sort"
+                            :options="$sorting"
+                        />
+                    </div>
                 </div>
 
                 <x-headers.h2
@@ -146,6 +182,17 @@
                                 'transform rotate-180': open,
                             }"
                         />
+
+                        @if ($filters->count() > 1)
+                            <x-form.button
+                                wire:loading.remove
+                                wire:target="resetFilters"
+                                wire:click="resetFilters()"
+                                class="text-xs"
+                            >
+                                Reset filters
+                            </x-form.button>
+                        @endif
                     </x-slot:actions>
                 </x-headers.h2>
 
@@ -192,7 +239,7 @@
                         />
                     </div>
 
-                    <div class="flex gap-4">
+                    {{-- <div class="flex gap-4">
                         <x-form.select
                             label="Trigger"
                             nullable
@@ -213,7 +260,7 @@
                             wire:model.live="filters.target"
                             :options="$targets"
                         />
-                    </div>
+                    </div> --}}
                 </div>
             </div>
 

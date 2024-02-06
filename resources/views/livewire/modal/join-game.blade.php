@@ -9,6 +9,7 @@
                 <span class="text-lg font-bold">
                     {{ $game->name }}
                 </span>
+
                 <span class="opacity-50">
                     {{ $game->user1->username }} is looking for a worthy opponent!
                 </span>
@@ -21,7 +22,7 @@
                 deck: @entangle('fields.deck_id'),
             }"
         >
-            @foreach ($decks as $deck)
+            @forelse ($decks as $deck)
                 <x-deck
                     :$deck
                     x-on:click.prevent="deck = {{ $deck->id }}"
@@ -30,14 +31,26 @@
                         'opacity-100': deck === {{ $deck->id }},
                     }"
                 />
-            @endforeach
+            @empty
+                <p class="col-span-3 opacity-75">
+                    Oh dear, you have no legal decks available!<br>
+                    Making sure you have a deck that in the <strong>{{ $game->format()?->name() }}</strong> format!
+                </p>
+            @endforelse
         </div>
 
-        <div>
-            <x-form.button
-                wire:click="join"
-                label="Join and play!"
+        <div class="w-full flex gap-4">
+            <x-form.button-secondary
+                x-on:click="window.closeModal()"
+                label="Cancel"
             />
+
+            @if ($decks->isNotEmpty())
+                <x-form.button
+                    wire:click="join"
+                    label="Join and play!"
+                />
+            @endif
         </div>
     </x-slot>
 </x-modal>

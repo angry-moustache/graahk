@@ -48,12 +48,14 @@ class CardResource extends Resource
 
                 Grid::make()->schema([
                     Select::make('type')
-                        ->options(CardType::class)
+                        ->options(CardType::list())
                         ->default('dude')
+                        ->reactive()
                         ->required(),
 
                     Select::make('tribes')
-                        ->options(Tribe::class)
+                        ->options(Tribe::list())
+                        ->helperText('"Ruse" is added automatically as a tribe if the card type is "ruse."')
                         ->multiple(),
 
                     TextInput::make('cost')
@@ -64,6 +66,7 @@ class CardResource extends Resource
                     TextInput::make('power')
                         ->type('number')
                         ->default(100)
+                        ->hidden(fn (Get $get) => $get('type') === 'ruse')
                         ->required(),
                 ]),
 
@@ -78,6 +81,16 @@ class CardResource extends Resource
                     ->label('Enter speed')
                     ->helperText('The speed at which the card enters the screen, in milliseconds.')
                     ->required(),
+
+                Grid::make()->schema(fn (Get $get) => [
+                    Select::make('entrance_animation.animation')
+                        ->options(Animation::list())
+                        ->reactive()
+                        ->nullable(),
+
+                    ...Animation::tryFrom($get('entrance_animation.animation'))
+                        ?->schema('entrance_animation.') ?? [],
+                ]),
             ]),
 
             Section::make('Effects')->schema([
@@ -90,17 +103,19 @@ class CardResource extends Resource
                     )),
 
                 Select::make('keywords')
-                    ->options(Keyword::class)
+                    ->options(Keyword::list())
                     ->multiple(),
 
                 Repeater::make('effects')->schema([
                     Grid::make()->schema([
                         Select::make('trigger')
-                            ->options(Trigger::class)
-                            ->required(),
+                            ->options(Trigger::list())
+                            ->required()
+                            ->reactive(),
 
                         Select::make('effect')
-                            ->options(Effect::class)
+                            ->options(Effect::list())
+                            ->hidden(fn (Get $get) => Trigger::tryFrom($get('trigger'))?->hasEffectDropdown() === false)
                             ->required()
                             ->reactive(),
                     ]),
@@ -109,7 +124,7 @@ class CardResource extends Resource
                         ...Effect::tryFrom($get('effect'))?->schema() ?? [],
 
                         Select::make('animation')
-                            ->options(Animation::class)
+                            ->options(Animation::list())
                             ->nullable()
                             ->reactive(),
 
@@ -133,10 +148,10 @@ class CardResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('cost')
+                TextColumn::make('type')
                     ->sortable(),
 
-                TextColumn::make('power')
+                TextColumn::make('cost')
                     ->sortable(),
 
                 AttachmentColumn::make('attachment_id')

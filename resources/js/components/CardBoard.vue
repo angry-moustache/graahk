@@ -3,6 +3,9 @@
     :id="card.type + '-' + card.uuid"
     class="has-tooltip relative flex justify-center origin-center transition-all duration-500"
     v-bind:data-card-id="card.id"
+    v-bind:class="{
+      'scale-105': card.glowing,
+    }"
   >
     <div
       v-bind:style="{ backgroundImage: `url('${card.image}')` }"
@@ -59,8 +62,8 @@
         <span
           v-text="card.power"
           v-bind:class="{
-            'text-green-500': card.originalPower < card.power,
-            'text-red-500': card.originalPower > card.power,
+            'text-green-500': card.original.power < card.power,
+            'text-red-500': card.dead || (card.original.power > card.power),
           }"
         />
       </div>

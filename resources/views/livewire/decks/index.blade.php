@@ -2,7 +2,7 @@
     <div class="grid grid-cols-4 gap-4">
         <div class="p-2 flex w-full">
             <x-form.button
-                wire:click="newDeck"
+                x-on:click="window.openModal('create-deck')"
                 class="
                     text-2xl bg-transparent border-text border-dashed
                     !text-text border-4 opacity-50 w-full

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use AngryMoustache\Media\Models\Attachment;
+use App\CardCache;
 use Illuminate\Database\Eloquent\Model;
 
 class Set extends Model
@@ -12,6 +13,11 @@ class Set extends Model
         'code',
         'attachment_id',
         'icon_id',
+        'beta',
+    ];
+
+    protected $casts = [
+        'beta' => 'boolean',
     ];
 
     public function attachment()
@@ -27,5 +33,12 @@ class Set extends Model
     public function cards()
     {
         return $this->belongsToMany(Card::class);
+    }
+
+    public static function booted()
+    {
+        static::saved(function () {
+            CardCache::flush();
+        });
     }
 }

@@ -28,7 +28,7 @@
         route="{{ route('server.index') }}"
         :active="request()->routeIs('server.index')"
         icon="heroicon-o-globe-alt"
-        label="Server browser"
+        :label="'Server browser (' . \App\Models\Game::ongoing()->count() . ')'"
     />
 
     <div class="grow"></div>
